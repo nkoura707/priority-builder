@@ -14,7 +14,154 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      locations: {
+        Row: {
+          address: string | null
+          business_name: string
+          created_at: string
+          google_access_token: string
+          google_account_id: string
+          google_location_id: string
+          google_refresh_token: string
+          id: string
+          reply_tone: string
+          token_expires_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          business_name: string
+          created_at?: string
+          google_access_token: string
+          google_account_id: string
+          google_location_id: string
+          google_refresh_token: string
+          id?: string
+          reply_tone?: string
+          token_expires_at: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          business_name?: string
+          created_at?: string
+          google_access_token?: string
+          google_account_id?: string
+          google_location_id?: string
+          google_refresh_token?: string
+          id?: string
+          reply_tone?: string
+          token_expires_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "locations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          onboarding_complete: boolean
+          stripe_customer_id: string | null
+          subscription_id: string | null
+          subscription_status: string | null
+          trial_ends_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+          onboarding_complete?: boolean
+          stripe_customer_id?: string | null
+          subscription_id?: string | null
+          subscription_status?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          onboarding_complete?: boolean
+          stripe_customer_id?: string | null
+          subscription_id?: string | null
+          subscription_status?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          ai_generated_reply: string | null
+          created_at: string
+          google_review_id: string
+          id: string
+          location_id: string
+          published_at: string | null
+          reply_status: string
+          reply_text: string | null
+          review_date: string
+          review_text: string | null
+          reviewer_name: string | null
+          star_rating: number
+          updated_at: string
+        }
+        Insert: {
+          ai_generated_reply?: string | null
+          created_at?: string
+          google_review_id: string
+          id?: string
+          location_id: string
+          published_at?: string | null
+          reply_status?: string
+          reply_text?: string | null
+          review_date: string
+          review_text?: string | null
+          reviewer_name?: string | null
+          star_rating: number
+          updated_at?: string
+        }
+        Update: {
+          ai_generated_reply?: string | null
+          created_at?: string
+          google_review_id?: string
+          id?: string
+          location_id?: string
+          published_at?: string | null
+          reply_status?: string
+          reply_text?: string | null
+          review_date?: string
+          review_text?: string | null
+          reviewer_name?: string | null
+          star_rating?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
