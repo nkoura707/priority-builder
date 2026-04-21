@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useState, createContext, useContext } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Inbox, MapPin, Settings as SettingsIcon, Menu, X } from "lucide-react";
 import { Logo } from "@/components/Logo";
@@ -19,6 +19,20 @@ interface LocationRow {
   address: string | null;
 }
 
+interface DashboardCtx {
+  locations: LocationRow[];
+  selectedLocationId: string;
+  loadingLocations: boolean;
+}
+
+const Ctx = createContext<DashboardCtx>({
+  locations: [],
+  selectedLocationId: "",
+  loadingLocations: true,
+});
+
+export const useDashboardLocation = () => useContext(Ctx);
+
 const navItems = [
   { to: "/dashboard", label: "Reviews", icon: Inbox, end: true },
   { to: "/dashboard/locations", label: "Locations", icon: MapPin },
@@ -31,6 +45,7 @@ export const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [locations, setLocations] = useState<LocationRow[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<string>("");
+  const [loadingLocations, setLoadingLocations] = useState(true);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -38,6 +53,7 @@ export const DashboardLayout = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (!user) return;
+    setLoadingLocations(true);
     supabase
       .from("locations")
       .select("id, business_name, address")
@@ -47,6 +63,7 @@ export const DashboardLayout = ({ children }: { children: ReactNode }) => {
           setLocations(data);
           setSelectedLocation(data[0].id);
         }
+        setLoadingLocations(false);
       });
   }, [user]);
 
@@ -96,10 +113,7 @@ export const DashboardLayout = ({ children }: { children: ReactNode }) => {
             >
               {({ isActive }) => (
                 <>
-                  <Icon
-                    size={16}
-                    className={isActive ? "text-[#D4622A]" : ""}
-                  />
+                  <Icon size={16} className={isActive ? "text-[#D4622A]" : ""} />
                   <span>{item.label}</span>
                 </>
               )}
@@ -121,36 +135,35 @@ export const DashboardLayout = ({ children }: { children: ReactNode }) => {
   );
 
   return (
-    <div className="min-h-screen flex bg-[#FAFAF7]">
-      {/* Desktop sidebar */}
-      <aside className="hidden md:block fixed inset-y-0 left-0 z-30">
-        {sidebarContent}
-      </aside>
+    <Ctx.Provider value={{ locations, selectedLocationId: selectedLocation, loadingLocations }}>
+      <div className="min-h-screen flex bg-[#FAFAF7]">
+        <aside className="hidden md:block fixed inset-y-0 left-0 z-30">
+          {sidebarContent}
+        </aside>
 
-      {/* Mobile sidebar overlay */}
-      {mobileOpen && (
-        <>
-          <div
-            className="md:hidden fixed inset-0 bg-black/50 z-40"
-            onClick={() => setMobileOpen(false)}
-          />
-          <aside className="md:hidden fixed inset-y-0 left-0 z-50">
-            {sidebarContent}
-          </aside>
-        </>
-      )}
+        {mobileOpen && (
+          <>
+            <div
+              className="md:hidden fixed inset-0 bg-black/50 z-40"
+              onClick={() => setMobileOpen(false)}
+            />
+            <aside className="md:hidden fixed inset-y-0 left-0 z-50">
+              {sidebarContent}
+            </aside>
+          </>
+        )}
 
-      {/* Main */}
-      <div className="flex-1 md:ml-60 flex flex-col min-w-0">
-        <button
-          className="md:hidden fixed top-3 left-3 z-30 p-2 rounded-md bg-white border border-[#E8E4DF] shadow-sm"
-          onClick={() => setMobileOpen((v) => !v)}
-          aria-label="Toggle menu"
-        >
-          {mobileOpen ? <X size={18} /> : <Menu size={18} />}
-        </button>
-        {children}
+        <div className="flex-1 md:ml-60 flex flex-col min-w-0">
+          <button
+            className="md:hidden fixed top-3 left-3 z-30 p-2 rounded-md bg-white border border-[#E8E4DF] shadow-sm"
+            onClick={() => setMobileOpen((v) => !v)}
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
+          {children}
+        </div>
       </div>
-    </div>
+    </Ctx.Provider>
   );
 };

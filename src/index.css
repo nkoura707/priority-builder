@@ -95,4 +95,15 @@
     text-transform: uppercase;
     font-weight: 500;
   }
+
+  .skeleton-shimmer {
+    background: linear-gradient(90deg, #F0EDE8 0%, #E4E0DC 50%, #F0EDE8 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
 }
