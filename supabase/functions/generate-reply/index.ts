@@ -10,30 +10,31 @@ interface GenerateReplyRequest {
   reviewId: string;
 }
 
-const TONE_INSTRUCTIONS: Record<string, string> = {
-  professional:
-    "Write in a professional, courteous tone. Be respectful and businesslike, avoiding overly casual language.",
-  friendly:
-    "Write in a warm, friendly, and conversational tone. Sound human and approachable, like a small business owner who genuinely cares.",
-  formal:
-    "Write in a formal tone. Use polished language, full sentences, and a respectful, slightly traditional voice.",
+const TONE_GUIDE: Record<string, string> = {
+  professional: "professional: warm but measured, no exclamation overuse",
+  friendly: "friendly: warm, personal, conversational, 1 emoji allowed",
+  formal: "formal: respectful, measured, polite",
 };
 
 function buildSystemPrompt(tone: string, businessName: string): string {
-  const toneInstruction = TONE_INSTRUCTIONS[tone] ?? TONE_INSTRUCTIONS.professional;
-  return [
-    `You are writing a reply on behalf of ${businessName} to a Google review.`,
-    toneInstruction,
-    "Rules:",
-    "- Keep replies concise: 2-4 sentences, under 600 characters.",
-    "- Address the reviewer by name if provided.",
-    "- Reference something specific from their review when possible (don't be generic).",
-    "- Thank positive reviewers sincerely. For negative reviews, acknowledge the issue, apologize where appropriate, and offer to make it right.",
-    "- Never make promises about refunds, discounts, or compensation.",
-    "- Do not include hashtags, emojis, links, or marketing language.",
-    "- Sign off naturally (e.g., '— The team at " + businessName + "') only if it fits the tone.",
-    "- Output only the reply text. No preamble, no quotes, no explanation.",
-  ].join("\n");
+  const toneLine = TONE_GUIDE[tone] ?? TONE_GUIDE.professional;
+  return `You are a review response writer for a local business called ${businessName}.
+Write genuine, human-sounding replies to Google reviews.
+Tone: ${tone}
+- ${toneLine}
+
+Rules:
+- Address reviewer by first name if available
+- Reference something specific from the review text
+- 1-2 stars: acknowledge issue sincerely, invite them to contact you directly
+- 3 stars: thank them, acknowledge concern, mention improvements
+- 4-5 stars: genuine gratitude, echo a specific positive detail
+- 40 to 75 words maximum
+- No hashtags
+- Never use: 'We value your feedback' or 'We take this seriously'
+- Never start with 'Thank you for your review'
+- End with: ${businessName} Team
+- Output only the reply text, nothing else`;
 }
 
 function buildUserMessage(
@@ -41,14 +42,10 @@ function buildUserMessage(
   starRating: number,
   reviewText: string | null,
 ): string {
-  const lines = [
-    `Reviewer: ${reviewerName ?? "Anonymous"}`,
-    `Rating: ${starRating} / 5`,
-    `Review: ${reviewText?.trim() || "(no text provided)"}`,
-    "",
-    "Write the reply now.",
-  ];
-  return lines.join("\n");
+  return `Reviewer: ${reviewerName ?? "A customer"}
+Star rating: ${starRating} out of 5
+Review text: ${reviewText?.trim() || "[No written review]"}
+Write the reply.`;
 }
 
 Deno.serve(async (req) => {
@@ -92,7 +89,6 @@ Deno.serve(async (req) => {
 
     const admin = createClient(supabaseUrl, serviceRoleKey);
 
-    // Load review + location, verify ownership
     const { data: review, error: reviewErr } = await admin
       .from("reviews")
       .select(
@@ -108,7 +104,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // @ts-ignore nested join type
+    // @ts-ignore nested join
     const location = review.locations;
     if (location.user_id !== userData.user.id) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
@@ -122,10 +118,7 @@ Deno.serve(async (req) => {
     if (!accountId || !cfToken) {
       return new Response(
         JSON.stringify({ error: "Cloudflare credentials not configured" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -156,13 +149,10 @@ Deno.serve(async (req) => {
     if (!cfRes.ok) {
       const errText = await cfRes.text();
       console.error("Cloudflare AI error:", cfRes.status, errText);
-      return new Response(
-        JSON.stringify({ error: "AI generation failed" }),
-        {
-          status: 502,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
+      return new Response(JSON.stringify({ error: "AI generation failed" }), {
+        status: 502,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const cfJson = await cfRes.json();
@@ -192,17 +182,14 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ reviewId: review.id, reply: cleaned }),
+      JSON.stringify({ reply: cleaned }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e) {
     console.error("generate-reply error:", e);
     return new Response(
       JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      },
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 });
