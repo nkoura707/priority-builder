@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, RefreshCw, Star, RotateCcw } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Loader2, Star, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 interface ReviewRow {
   id: string;
