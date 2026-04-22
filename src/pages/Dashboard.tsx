@@ -146,26 +146,43 @@ const DashboardInner = () => {
     <>
       {/* Top bar */}
       <header className="sticky top-0 z-20 bg-white border-b border-[#E8E4DF]">
-        <div className="flex items-center justify-between px-6 md:px-8 py-4 pl-16 md:pl-8">
-          <h1 className="font-serif text-[22px] leading-none">Review Inbox</h1>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => runSync(false)}
-            disabled={syncing || !selectedLocationId}
-          >
-            {syncing ? (
-              <>
-                <Loader2 size={14} className="mr-1.5 animate-spin" />
-                Syncing…
-              </>
-            ) : (
-              <>
-                <RefreshCw size={14} className="mr-1.5" />
-                Sync reviews
-              </>
-            )}
-          </Button>
+        <div className="flex items-center justify-between px-6 md:px-8 py-4 pl-16 md:pl-8 gap-3">
+          <div className="flex flex-col">
+            <h1 className="font-serif text-[22px] leading-none">Review Inbox</h1>
+            <span className="text-[11px] text-muted-foreground mt-1">
+              Google API access pending — use "Add review" to test
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setAddOpen(true)}
+              disabled={!selectedLocationId}
+            >
+              <Plus size={14} className="mr-1.5" />
+              Add review
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => runSync(false)}
+              disabled={syncing || !selectedLocationId}
+              title="Google API access pending — use 'Add review' to test"
+            >
+              {syncing ? (
+                <>
+                  <Loader2 size={14} className="mr-1.5 animate-spin" />
+                  Syncing…
+                </>
+              ) : (
+                <>
+                  <RefreshCw size={14} className="mr-1.5" />
+                  Sync reviews
+                </>
+              )}
+            </Button>
+          </div>
         </div>
 
         <div className="flex gap-1 px-4 md:px-6">
