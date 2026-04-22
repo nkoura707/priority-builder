@@ -9,6 +9,7 @@ import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import Login from "./pages/Login";
 import AuthCallback from "./pages/AuthCallback";
+import GmbCallback from "./pages/GmbCallback";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import Locations from "./pages/Locations";
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/auth/gmb/callback" element={<GmbCallback />} />
             <Route
               path="/onboarding"
               element={
