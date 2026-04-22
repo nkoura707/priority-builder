@@ -25,6 +25,7 @@ const DashboardInner = () => {
   const [syncing, setSyncing] = useState(false);
   const [tokenExpired, setTokenExpired] = useState(false);
   const [autoSynced, setAutoSynced] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
 
   // Subscription state
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
