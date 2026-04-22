@@ -1,67 +1,158 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
 import { Check, Loader2 } from "lucide-react";
+import {
+  buildGmbAuthUrl,
+  GMB_PENDING_KEY,
+  type ExchangeGmbTokenResponse,
+  type GmbLocation,
+} from "@/lib/gmb";
 
 type Tone = "professional" | "friendly" | "formal";
-
-const SAMPLE_LOCATIONS = [
-  { id: "loc_1", name: "Osteria Marco — Downtown", address: "123 Main St" },
-  { id: "loc_2", name: "Osteria Marco — Riverside", address: "456 Oak Ave" },
-];
 
 const TONES: { id: Tone; name: string; description: string; sample: string }[] = [
   {
     id: "professional",
     name: "Professional",
     description: "Warm but composed. Works for most businesses.",
-    sample: "Thank you for taking the time to share your experience, Sarah. We're glad the pasta lived up to expectations and hope to see you again soon.",
+    sample:
+      "Thank you for taking the time to share your experience, Sarah. We're glad the pasta lived up to expectations and hope to see you again soon.",
   },
   {
     id: "friendly",
     name: "Friendly",
     description: "Conversational and personable. Like a note from the owner.",
-    sample: "Sarah, this absolutely made our day! So happy you loved the pasta — come back soon, we'll save you a table by the window.",
+    sample:
+      "Sarah, this absolutely made our day! So happy you loved the pasta — come back soon, we'll save you a table by the window.",
   },
   {
     id: "formal",
     name: "Formal",
     description: "Polished and traditional. Best for upscale establishments.",
-    sample: "Dear Sarah, we are most grateful for your kind review. It would be our pleasure to welcome you back to Osteria Marco at your convenience.",
+    sample:
+      "Dear Sarah, we are most grateful for your kind review. It would be our pleasure to welcome you back to Osteria Marco at your convenience.",
   },
 ];
+
+type NormalizedLocation = {
+  id: string; // google_location_id (last segment of `name`)
+  fullName: string; // raw `name` from API e.g. "accounts/x/locations/y"
+  title: string;
+  address: string;
+};
+
+const normalizeLocations = (raw: GmbLocation[]): NormalizedLocation[] =>
+  raw.map((loc) => {
+    const idSegment = (loc.name ?? "").split("/").pop() ?? "";
+    const addr = loc.storefrontAddress ?? loc.address;
+    const lines = addr?.addressLines?.join(", ") ?? "";
+    const cityState = [addr?.locality, addr?.administrativeArea].filter(Boolean).join(", ");
+    const address = [lines, cityState].filter(Boolean).join(" • ");
+    return {
+      id: idSegment,
+      fullName: loc.name,
+      title: loc.title ?? loc.locationName ?? "Unnamed location",
+      address,
+    };
+  });
 
 const Onboarding = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [step, setStep] = useState(1);
-  const [connecting, setConnecting] = useState(false);
-  const [locationsLoaded, setLocationsLoaded] = useState(false);
+  const [pendingOAuth, setPendingOAuth] = useState<ExchangeGmbTokenResponse | null>(null);
+  const [locations, setLocations] = useState<NormalizedLocation[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<string>("");
   const [tone, setTone] = useState<Tone>("professional");
   const [finishing, setFinishing] = useState(false);
+  const [savingLocation, setSavingLocation] = useState(false);
 
-  const handleConnect = async () => {
-    setConnecting(true);
-    // Simulate fetching locations from GMB API
-    await new Promise((r) => setTimeout(r, 900));
-    setLocationsLoaded(true);
-    setSelectedLocation(SAMPLE_LOCATIONS[0].id);
-    setConnecting(false);
+  // Pick up OAuth result from sessionStorage when returning from /auth/gmb/callback
+  useEffect(() => {
+    const raw = sessionStorage.getItem(GMB_PENDING_KEY);
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw) as ExchangeGmbTokenResponse;
+      setPendingOAuth(parsed);
+      const normalized = normalizeLocations(parsed.locations ?? []);
+      setLocations(normalized);
+      if (normalized.length > 0) setSelectedLocation(normalized[0].id);
+      // Auto-advance: connection succeeded, move past the connect step
+      // We stay on Step 1 but show the location picker.
+    } catch (e) {
+      console.error("Failed to parse pending OAuth payload", e);
+      sessionStorage.removeItem(GMB_PENDING_KEY);
+    }
+  }, []);
+
+  // Show error toast if OAuth callback failed
+  useEffect(() => {
+    if (searchParams.get("error") === "gmb_failed") {
+      toast.error("Couldn't connect to Google. Please try again.");
+      searchParams.delete("error");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
+  const handleConnect = () => {
+    window.location.href = buildGmbAuthUrl();
+  };
+
+  const handleStep1Continue = async () => {
+    if (!user || !pendingOAuth || !selectedLocation) return;
+    const loc = locations.find((l) => l.id === selectedLocation);
+    if (!loc) return;
+
+    setSavingLocation(true);
+    const expiresAt = new Date(Date.now() + pendingOAuth.expires_in * 1000).toISOString();
+
+    const { error } = await supabase.from("locations").insert({
+      user_id: user.id,
+      google_account_id: pendingOAuth.account_id,
+      google_location_id: loc.id,
+      business_name: loc.title,
+      address: loc.address || null,
+      google_access_token: pendingOAuth.access_token,
+      google_refresh_token: pendingOAuth.refresh_token,
+      token_expires_at: expiresAt,
+    });
+
+    setSavingLocation(false);
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    sessionStorage.removeItem(GMB_PENDING_KEY);
+    setStep(2);
   };
 
   const finish = async () => {
     if (!user) return;
     setFinishing(true);
+
+    // Persist selected tone on the location we just created
+    if (pendingOAuth && selectedLocation) {
+      await supabase
+        .from("locations")
+        .update({ reply_tone: tone })
+        .eq("user_id", user.id)
+        .eq("google_location_id", selectedLocation);
+    }
+
     const { error } = await supabase
       .from("profiles")
       .update({ onboarding_complete: true })
       .eq("id", user.id);
+
     if (error) {
       toast.error(error.message);
       setFinishing(false);
@@ -72,7 +163,6 @@ const Onboarding = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Top bar */}
       <header className="px-6 py-5 flex items-center justify-between max-w-6xl w-full mx-auto">
         <Logo size={20} />
         <button
@@ -85,7 +175,6 @@ const Onboarding = () => {
 
       <main className="flex-1 flex items-start justify-center px-6 pt-8 pb-16">
         <div className="w-full max-w-[480px]">
-          {/* Progress dots */}
           <div className="flex items-center justify-center gap-2 mb-10" aria-label={`Step ${step} of 3`}>
             {[1, 2, 3].map((n) => (
               <span
@@ -104,12 +193,13 @@ const Onboarding = () => {
           <div className="bg-surface border border-border rounded-xl p-8">
             {step === 1 && (
               <Step1
-                connecting={connecting}
-                locationsLoaded={locationsLoaded}
+                connected={!!pendingOAuth}
+                locations={locations}
                 selectedLocation={selectedLocation}
                 setSelectedLocation={setSelectedLocation}
                 onConnect={handleConnect}
-                onContinue={() => setStep(2)}
+                onContinue={handleStep1Continue}
+                saving={savingLocation}
               />
             )}
             {step === 2 && (
@@ -125,19 +215,21 @@ const Onboarding = () => {
 
 /* ---------- Step 1 ---------- */
 const Step1 = ({
-  connecting,
-  locationsLoaded,
+  connected,
+  locations,
   selectedLocation,
   setSelectedLocation,
   onConnect,
   onContinue,
+  saving,
 }: {
-  connecting: boolean;
-  locationsLoaded: boolean;
+  connected: boolean;
+  locations: NormalizedLocation[];
   selectedLocation: string;
   setSelectedLocation: (v: string) => void;
   onConnect: () => void;
   onContinue: () => void;
+  saving: boolean;
 }) => (
   <>
     <h1 className="font-serif text-[32px] leading-tight mb-3">Connect your Google Business</h1>
@@ -145,29 +237,33 @@ const Step1 = ({
       We need permission to read your reviews and post replies on your behalf. This is a one-time setup.
     </p>
 
-    {!locationsLoaded ? (
-      <Button onClick={onConnect} disabled={connecting} className="w-full h-11" size="lg">
-        {connecting ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Connecting…
-          </>
-        ) : (
-          <>
-            <GoogleIcon />
-            Connect with Google
-          </>
-        )}
+    {!connected ? (
+      <Button onClick={onConnect} className="w-full h-11" size="lg">
+        <GoogleIcon />
+        Connect with Google
       </Button>
+    ) : locations.length === 0 ? (
+      <>
+        <div className="flex items-center gap-2 text-[13px] text-success mb-5">
+          <Check className="h-4 w-4" />
+          Connected — but we couldn't find any business locations on this Google account.
+        </div>
+        <p className="text-[13px] text-muted-foreground mb-6">
+          Make sure the Google account you connected has access to a verified Google Business Profile.
+        </p>
+        <Button variant="outline" onClick={onConnect} className="w-full h-11">
+          Try a different account
+        </Button>
+      </>
     ) : (
       <>
         <div className="flex items-center gap-2 text-[13px] text-success mb-5">
           <Check className="h-4 w-4" />
-          Connected. Found {SAMPLE_LOCATIONS.length} locations.
+          Connected. Found {locations.length} location{locations.length === 1 ? "" : "s"}.
         </div>
         <label className="label-tiny text-muted-foreground block mb-3">Choose a location to start with</label>
         <div className="space-y-2 mb-6">
-          {SAMPLE_LOCATIONS.map((loc) => {
+          {locations.map((loc) => {
             const active = selectedLocation === loc.id;
             return (
               <button
@@ -180,14 +276,16 @@ const Step1 = ({
                     : "border-border hover:border-border-strong bg-surface"
                 }`}
               >
-                <div className="text-[14px] font-medium text-foreground">{loc.name}</div>
-                <div className="text-[13px] text-muted-foreground mt-0.5">{loc.address}</div>
+                <div className="text-[14px] font-medium text-foreground">{loc.title}</div>
+                {loc.address && (
+                  <div className="text-[13px] text-muted-foreground mt-0.5">{loc.address}</div>
+                )}
               </button>
             );
           })}
         </div>
-        <Button onClick={onContinue} disabled={!selectedLocation} className="w-full h-11" size="lg">
-          Continue
+        <Button onClick={onContinue} disabled={!selectedLocation || saving} className="w-full h-11" size="lg">
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continue"}
         </Button>
       </>
     )}
@@ -271,10 +369,8 @@ const Step3 = ({
       Your 7-day free trial has started. No payment needed yet — we'll remind you before it ends.
     </p>
 
-    {/* Timeline */}
     <div className="bg-muted-bg rounded-lg p-5 mb-8">
       <div className="relative flex items-start justify-between">
-        {/* line */}
         <div className="absolute top-2 left-2 right-2 h-px bg-border-strong" />
         {[
           { label: "Today", sub: "Trial starts", active: true },
