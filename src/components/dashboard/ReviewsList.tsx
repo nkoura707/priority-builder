@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, Star, RotateCcw } from "lucide-react";
+import { Loader2, Star, RotateCcw, Undo2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
@@ -12,7 +12,10 @@ interface ReviewRow {
   ai_generated_reply: string | null;
   reply_text: string | null;
   reply_status: string;
+  published_at: string | null;
 }
+
+type Status = "pending" | "published" | "skipped";
 
 const AVATAR_COLORS = ["#FDE68A", "#BBF7D0", "#BFDBFE", "#DDD6FE", "#FED7AA", "#FECACA"];
 
@@ -77,7 +80,46 @@ const SkeletonCard = () => (
   </div>
 );
 
-const ReviewCard = ({
+const ReviewHeader = ({ review }: { review: ReviewRow }) => {
+  const isLowStar = review.star_rating <= 2;
+  return (
+    <div className="flex items-center gap-3">
+      <div
+        className="h-9 w-9 rounded-full flex items-center justify-center text-sm font-semibold text-[#1C1917]"
+        style={{ backgroundColor: avatarColor(review.reviewer_name) }}
+      >
+        {initial(review.reviewer_name)}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[15px] font-semibold text-[#1C1917]">
+            {review.reviewer_name ?? "Anonymous"}
+          </span>
+          <Stars count={review.star_rating} />
+          <span className="text-xs text-muted-foreground">
+            · {relativeDate(review.review_date)}
+          </span>
+          {isLowStar && review.reply_status === "pending" && (
+            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#FEF2F2] text-[#DC2626]">
+              Needs response
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ReviewBody = ({ text }: { text: string | null }) =>
+  text ? (
+    <p className="text-[15px] text-[#374151] leading-[1.7] whitespace-pre-line">{text}</p>
+  ) : (
+    <p className="text-sm italic text-muted-foreground">
+      Left a star rating without a written review
+    </p>
+  );
+
+const PendingCard = ({
   review,
   onRegenerate,
   onSkip,
@@ -95,7 +137,6 @@ const ReviewCard = ({
 
   const draft = review.ai_generated_reply ?? "";
   const isGenerating = review.ai_generated_reply === null;
-  const isLowStar = review.star_rating <= 2;
 
   return (
     <article
@@ -103,59 +144,20 @@ const ReviewCard = ({
       style={{ borderLeft: `4px solid ${borderColor(review.star_rating)}` }}
     >
       <div className="p-5">
-        {/* Row 1 */}
-        <div className="flex items-center gap-3">
-          <div
-            className="h-9 w-9 rounded-full flex items-center justify-center text-sm font-semibold text-[#1C1917]"
-            style={{ backgroundColor: avatarColor(review.reviewer_name) }}
-          >
-            {initial(review.reviewer_name)}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[15px] font-semibold text-[#1C1917]">
-                {review.reviewer_name ?? "Anonymous"}
-              </span>
-              <Stars count={review.star_rating} />
-              <span className="text-xs text-muted-foreground">
-                · {relativeDate(review.review_date)}
-              </span>
-              {isLowStar && (
-                <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#FEF2F2] text-[#DC2626]">
-                  Needs response
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Row 2 */}
+        <ReviewHeader review={review} />
         <div className="mt-4">
-          {review.review_text ? (
-            <p className="text-[15px] text-[#374151] leading-[1.7] whitespace-pre-line">
-              {review.review_text}
-            </p>
-          ) : (
-            <p className="text-sm italic text-muted-foreground">
-              Left a star rating without a written review
-            </p>
-          )}
+          <ReviewBody text={review.review_text} />
         </div>
 
-        {/* Divider */}
         <div className="my-5 border-t border-dashed border-[#E8E4DF]" />
 
-        {/* Draft label */}
         <div className="flex items-center gap-2 mb-2">
           <span className="text-[11px] uppercase tracking-wider font-medium text-[#D4622A]">
             Draft reply
           </span>
-          {isGenerating && (
-            <Loader2 size={12} className="animate-spin text-[#D4622A]" />
-          )}
+          {isGenerating && <Loader2 size={12} className="animate-spin text-[#D4622A]" />}
         </div>
 
-        {/* Editable textarea */}
         <textarea
           value={draft}
           onChange={(e) => onDraftChange(review.id, e.target.value)}
@@ -164,7 +166,6 @@ const ReviewCard = ({
           className="w-full bg-[#FFFBEB] border border-[#E8C87A] rounded-md p-3 text-[14px] text-[#1C1917] leading-relaxed resize-y min-h-[80px] focus:outline-none focus:ring-2 focus:ring-[#D4622A]/30"
         />
 
-        {/* Bottom row */}
         <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-3">
             <button
@@ -224,11 +225,77 @@ const ReviewCard = ({
               setBusy(null);
             }}
           >
-            {busy === "publish" ? (
-              <Loader2 size={14} className="animate-spin" />
+            {busy === "publish" ? <Loader2 size={14} className="animate-spin" /> : <>Publish reply →</>}
+          </Button>
+        </div>
+      </div>
+    </article>
+  );
+};
+
+const PublishedCard = ({ review }: { review: ReviewRow }) => (
+  <article
+    className="bg-white border border-[#E8E4DF] rounded-lg overflow-hidden"
+    style={{ borderLeft: `4px solid ${borderColor(review.star_rating)}` }}
+  >
+    <div className="p-5">
+      <ReviewHeader review={review} />
+      <div className="mt-4">
+        <ReviewBody text={review.review_text} />
+      </div>
+      <div className="my-5 border-t border-dashed border-[#E8E4DF]" />
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-[11px] uppercase tracking-wider font-medium text-[#16A34A]">
+          Published reply
+        </span>
+        {review.published_at && (
+          <span className="text-xs text-muted-foreground">
+            · {relativeDate(review.published_at)}
+          </span>
+        )}
+      </div>
+      <p className="text-[14px] text-[#1C1917] leading-relaxed whitespace-pre-line bg-[#F1FBF4] border border-[#BBF0C9] rounded-md p-3">
+        {review.reply_text ?? ""}
+      </p>
+    </div>
+  </article>
+);
+
+const SkippedCard = ({
+  review,
+  onRestore,
+}: {
+  review: ReviewRow;
+  onRestore: (id: string) => void;
+}) => {
+  const [busy, setBusy] = useState(false);
+  return (
+    <article
+      className="bg-white border border-[#E8E4DF] rounded-lg overflow-hidden opacity-90"
+      style={{ borderLeft: `4px solid ${borderColor(review.star_rating)}` }}
+    >
+      <div className="p-5">
+        <ReviewHeader review={review} />
+        <div className="mt-4">
+          <ReviewBody text={review.review_text} />
+        </div>
+        <div className="mt-5 flex justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              await onRestore(review.id);
+              setBusy(false);
+            }}
+          >
+            {busy ? (
+              <Loader2 size={14} className="mr-1.5 animate-spin" />
             ) : (
-              <>Publish reply →</>
+              <Undo2 size={14} className="mr-1.5" />
             )}
+            Restore to pending
           </Button>
         </div>
       </div>
@@ -238,23 +305,26 @@ const ReviewCard = ({
 
 export const ReviewsList = ({
   locationId,
+  status,
   loadingInitial,
 }: {
   locationId: string;
+  status: Status;
   loadingInitial: boolean;
 }) => {
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load pending reviews
   const refresh = async () => {
     if (!locationId) return;
     const { data } = await supabase
       .from("reviews")
-      .select("id, reviewer_name, star_rating, review_text, review_date, ai_generated_reply, reply_text, reply_status")
+      .select(
+        "id, reviewer_name, star_rating, review_text, review_date, ai_generated_reply, reply_text, reply_status, published_at",
+      )
       .eq("location_id", locationId)
-      .eq("reply_status", "pending")
-      .order("review_date", { ascending: false });
+      .eq("reply_status", status)
+      .order(status === "published" ? "published_at" : "review_date", { ascending: false });
     setReviews(data ?? []);
     setLoading(false);
   };
@@ -263,13 +333,12 @@ export const ReviewsList = ({
     setLoading(true);
     refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [locationId]);
+  }, [locationId, status]);
 
-  // Realtime updates so AI replies appear as they finish
   useEffect(() => {
     if (!locationId) return;
     const channel = supabase
-      .channel(`reviews:${locationId}`)
+      .channel(`reviews:${locationId}:${status}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "reviews", filter: `location_id=eq.${locationId}` },
@@ -280,7 +349,7 @@ export const ReviewsList = ({
       supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [locationId]);
+  }, [locationId, status]);
 
   const handleDraftChange = (id: string, text: string) => {
     setReviews((prev) =>
@@ -302,7 +371,6 @@ export const ReviewsList = ({
   };
 
   const handlePublish = async (id: string, text: string) => {
-    // Local-only publish for now (Google publish endpoint comes later)
     await supabase
       .from("reviews")
       .update({
@@ -311,6 +379,11 @@ export const ReviewsList = ({
         published_at: new Date().toISOString(),
       })
       .eq("id", id);
+    await refresh();
+  };
+
+  const handleRestore = async (id: string) => {
+    await supabase.from("reviews").update({ reply_status: "pending" }).eq("id", id);
     await refresh();
   };
 
@@ -328,16 +401,21 @@ export const ReviewsList = ({
 
   return (
     <div className="space-y-4 max-w-3xl mx-auto px-6 py-6">
-      {reviews.map((r) => (
-        <ReviewCard
-          key={r.id}
-          review={r}
-          onRegenerate={handleRegenerate}
-          onSkip={handleSkip}
-          onPublish={handlePublish}
-          onDraftChange={handleDraftChange}
-        />
-      ))}
+      {reviews.map((r) => {
+        if (status === "published") return <PublishedCard key={r.id} review={r} />;
+        if (status === "skipped")
+          return <SkippedCard key={r.id} review={r} onRestore={handleRestore} />;
+        return (
+          <PendingCard
+            key={r.id}
+            review={r}
+            onRegenerate={handleRegenerate}
+            onSkip={handleSkip}
+            onPublish={handlePublish}
+            onDraftChange={handleDraftChange}
+          />
+        );
+      })}
     </div>
   );
 };
