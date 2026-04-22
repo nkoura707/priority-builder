@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { CheckCircle2, RefreshCw, AlertTriangle, Loader2, X } from "lucide-react";
+import { CheckCircle2, RefreshCw, AlertTriangle, Loader2, X, Plus } from "lucide-react";
 import { DashboardLayout, useDashboardLocation } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { ReviewsList } from "@/components/dashboard/ReviewsList";
+import { AddReviewSheet } from "@/components/dashboard/AddReviewSheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
