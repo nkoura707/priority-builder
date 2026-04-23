@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { CalendarIcon, Star, Loader2 } from "lucide-react";
 import {
@@ -31,6 +31,20 @@ export const AddReviewSheet = ({ open, onOpenChange, locationId }: AddReviewShee
   const [reviewText, setReviewText] = useState("");
   const [date, setDate] = useState<Date>(new Date());
   const [submitting, setSubmitting] = useState(false);
+  const [fallbackLocationId, setFallbackLocationId] = useState<string>("");
+
+  // If parent didn't pass a locationId, fetch the user's first location.
+  useEffect(() => {
+    if (locationId || !open) return;
+    (async () => {
+      const { data } = await supabase
+        .from("locations")
+        .select("id")
+        .limit(1)
+        .maybeSingle();
+      if (data?.id) setFallbackLocationId(data.id);
+    })();
+  }, [open, locationId]);
 
   const reset = () => {
     setReviewerName("");
@@ -41,8 +55,9 @@ export const AddReviewSheet = ({ open, onOpenChange, locationId }: AddReviewShee
   };
 
   const handleSubmit = async () => {
-    if (!locationId) {
-      toast.error("No location selected");
+    const effectiveLocationId = locationId || fallbackLocationId;
+    if (!effectiveLocationId) {
+      toast.error("No location available. Please complete onboarding first.");
       return;
     }
     if (stars < 1 || stars > 5) {
@@ -59,7 +74,7 @@ export const AddReviewSheet = ({ open, onOpenChange, locationId }: AddReviewShee
       const { data: inserted, error: insertErr } = await supabase
         .from("reviews")
         .insert({
-          location_id: locationId,
+          location_id: effectiveLocationId,
           google_review_id: `manual_${Date.now()}`,
           reviewer_name: reviewerName.trim() || null,
           star_rating: stars,

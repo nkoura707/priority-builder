@@ -149,21 +149,12 @@ const DashboardInner = () => {
         <div className="flex items-center justify-between px-6 md:px-8 py-4 pl-16 md:pl-8 gap-3">
           <div className="flex flex-col">
             <h1 className="font-serif text-[22px] leading-none">Review Inbox</h1>
-            <span className="text-[11px] text-muted-foreground mt-1">
-              Google API access pending — use "Add review" to test
-            </span>
           </div>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                if (!selectedLocationId) {
-                  toast.error("Connect a location first to add a review");
-                  return;
-                }
-                setAddOpen(true);
-              }}
+              onClick={() => setAddOpen(true)}
             >
               <Plus size={14} className="mr-1.5" />
               Add review
@@ -173,7 +164,6 @@ const DashboardInner = () => {
               size="sm"
               onClick={() => runSync(false)}
               disabled={syncing || !selectedLocationId}
-              title="Google API access pending — use 'Add review' to test"
             >
               {syncing ? (
                 <>

@@ -139,13 +139,40 @@ const Onboarding = () => {
     if (!user) return;
     setFinishing(true);
 
-    // Persist selected tone on the location we just created
+    // Persist selected tone on the location we just created (real GMB flow)
     if (pendingOAuth && selectedLocation) {
       await supabase
         .from("locations")
         .update({ reply_tone: tone })
         .eq("user_id", user.id)
         .eq("google_location_id", selectedLocation);
+    }
+
+    // Ensure the user has at least one location row so the dashboard works
+    // even when the real GMB flow hasn't been completed yet.
+    const { data: existingLocs } = await supabase
+      .from("locations")
+      .select("id")
+      .eq("user_id", user.id)
+      .limit(1);
+
+    if (!existingLocs || existingLocs.length === 0) {
+      const { error: insertErr } = await supabase.from("locations").insert({
+        user_id: user.id,
+        google_account_id: "pending",
+        google_location_id: "pending_" + user.id,
+        business_name: "My Business",
+        address: null,
+        google_access_token: "pending",
+        google_refresh_token: "pending",
+        token_expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+        reply_tone: tone,
+      });
+      if (insertErr) {
+        toast.error(insertErr.message);
+        setFinishing(false);
+        return;
+      }
     }
 
     const { error } = await supabase
