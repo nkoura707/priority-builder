@@ -157,8 +157,13 @@ const DashboardInner = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setAddOpen(true)}
-              disabled={!selectedLocationId}
+              onClick={() => {
+                if (!selectedLocationId) {
+                  toast.error("Connect a location first to add a review");
+                  return;
+                }
+                setAddOpen(true);
+              }}
             >
               <Plus size={14} className="mr-1.5" />
               Add review
