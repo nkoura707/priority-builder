@@ -18,23 +18,27 @@ const TONES: { id: Tone; name: string; description: string }[] = [
 ];
 
 const StatusBadge = ({ status }: { status: string | null }) => {
-  const map: Record<string, { label: string; bg: string; text: string }> = {
-    active: { label: "Active", bg: "bg-[#DCFCE7]", text: "text-[#16A34A]" },
-    trialing: { label: "Trialing", bg: "bg-[#FEF3C7]", text: "text-[#92400E]" },
-    past_due: { label: "Past due", bg: "bg-[#FEE2E2]", text: "text-[#DC2626]" },
-    canceled: { label: "Canceled", bg: "bg-[#F1EEE9]", text: "text-muted-foreground" },
+  const map: Record<string, { label: string; bg: string; text: string; dot: string }> = {
+    active: { label: "Active", bg: "bg-success-light", text: "text-success", dot: "bg-success" },
+    trialing: { label: "Trialing", bg: "bg-warning-light", text: "text-[hsl(38_92%_28%)]", dot: "bg-warning" },
+    past_due: { label: "Past due", bg: "bg-danger-light", text: "text-danger", dot: "bg-danger" },
+    canceled: { label: "Canceled", bg: "bg-muted-bg", text: "text-muted-foreground", dot: "bg-muted-foreground" },
   };
-  const v = status && map[status] ? map[status] : { label: "Trial", bg: "bg-[#FEF3C7]", text: "text-[#92400E]" };
+  const v = status && map[status] ? map[status] : { label: "Trial", bg: "bg-warning-light", text: "text-[hsl(38_92%_28%)]", dot: "bg-warning" };
   return (
-    <span className={cn("text-[11px] font-medium px-2 py-0.5 rounded-full", v.bg, v.text)}>
+    <span className={cn("inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-md", v.bg, v.text)}>
+      <span className={cn("h-1.5 w-1.5 rounded-full", v.dot)} />
       {v.label}
     </span>
   );
 };
 
 const Card = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <section className="bg-white border border-[#E8E4DF] rounded-[10px] p-6">
-    <h2 className="font-serif text-[20px] mb-5">{title}</h2>
+  <section className="bg-surface border border-border rounded-xl p-6 hover-lift">
+    <div className="flex items-center gap-3 mb-5">
+      <div className="h-px w-6 bg-accent" />
+      <h2 className="font-serif text-[20px] tracking-[-0.02em]">{title}</h2>
+    </div>
     {children}
   </section>
 );

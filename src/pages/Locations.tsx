@@ -60,9 +60,9 @@ const LocationsInner = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-20 bg-white border-b border-[#E8E4DF]">
-        <div className="flex items-center justify-between px-6 md:px-8 py-4 pl-16 md:pl-8">
-          <h1 className="font-serif text-[22px] leading-none">Locations</h1>
+      <header className="sticky top-0 z-20 bg-surface border-b border-border">
+        <div className="flex items-center justify-between px-6 md:px-8 h-[58px] pl-16 md:pl-8">
+          <h1 className="font-serif text-[22px] leading-none tracking-[-0.02em]">Locations</h1>
           <Button size="sm" onClick={() => toast("Connecting more locations is coming soon.")}>
             <Plus size={14} className="mr-1.5" />
             Add another location
@@ -73,30 +73,31 @@ const LocationsInner = () => {
       <main className="flex-1 max-w-3xl mx-auto w-full px-6 py-6 space-y-3">
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <Loader2 className="h-5 w-5 animate-spin text-[#D4622A]" />
+            <Loader2 className="h-5 w-5 animate-spin text-accent" />
           </div>
         ) : locations.length === 0 ? (
-          <div className="bg-white border border-[#E8E4DF] rounded-[10px] p-10 text-center">
-            <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-[#F1EEE9] flex items-center justify-center">
+          <div className="bg-surface border border-border rounded-xl p-10 text-center">
+            <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-muted-bg flex items-center justify-center">
               <MapPin size={22} className="text-muted-foreground" strokeWidth={1.5} />
             </div>
-            <h2 className="font-serif text-[22px] mb-1">No locations yet</h2>
+            <h2 className="font-serif text-[22px] mb-1 tracking-[-0.02em]">No locations yet</h2>
             <p className="text-sm text-muted-foreground">
               Connect a Google Business location to get started.
             </p>
           </div>
         ) : (
-          locations.map((loc) => {
+          locations.map((loc, idx) => {
             const confirming = confirmingId === loc.id;
             const removing = removingId === loc.id;
             return (
               <div
                 key={loc.id}
-                className="bg-white border border-[#E8E4DF] rounded-[10px] p-5 flex items-start justify-between gap-4"
+                className="bg-surface border border-border rounded-xl p-5 flex items-start justify-between gap-4 hover-lift animate-in-up"
+                style={{ animationDelay: `${idx * 60}ms` }}
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-[15px] font-semibold text-[#1C1917]">
+                    <h3 className="text-[15px] font-semibold text-foreground">
                       {loc.business_name}
                     </h3>
                     <ToneBadge tone={loc.reply_tone} />
@@ -112,7 +113,7 @@ const LocationsInner = () => {
                     <button
                       onClick={() => handleRemove(loc.id)}
                       disabled={removing}
-                      className="text-[#DC2626] font-medium hover:underline disabled:opacity-50"
+                      className="text-danger font-medium hover:underline disabled:opacity-50"
                     >
                       {removing ? "Removing…" : "Yes, remove"}
                     </button>

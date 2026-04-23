@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CheckCircle2, RefreshCw, AlertTriangle, Loader2, X, Plus } from "lucide-react";
+import { RefreshCw, AlertTriangle, Loader2, X, Plus, Inbox } from "lucide-react";
 import { DashboardLayout, useDashboardLocation } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { ReviewsList } from "@/components/dashboard/ReviewsList";
@@ -145,38 +145,36 @@ const DashboardInner = () => {
   return (
     <>
       {/* Top bar */}
-      <header className="sticky top-0 z-20 bg-white border-b border-[#E8E4DF]">
-        <div className="flex items-center justify-between px-6 md:px-8 py-4 pl-16 md:pl-8 gap-3">
-          <div className="flex flex-col">
-            <h1 className="font-serif text-[22px] leading-none">Review Inbox</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
+      <header className="sticky top-0 z-20 bg-surface border-b border-border">
+        <div className="flex items-center justify-between px-6 md:px-8 h-[58px] pl-16 md:pl-8 gap-3">
+          <h1 className="font-serif text-[22px] leading-none tracking-[-0.02em]">Review Inbox</h1>
+          <div className="flex items-center gap-1 bg-muted-bg rounded-lg p-1">
+            <button
+              type="button"
               onClick={() => setAddOpen(true)}
+              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[13px] font-medium text-foreground hover:bg-surface transition-colors btn-press"
             >
-              <Plus size={14} className="mr-1.5" />
+              <Plus size={14} className="text-accent" />
               Add review
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
+            </button>
+            <button
+              type="button"
               onClick={() => runSync(false)}
               disabled={syncing || !selectedLocationId}
+              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[13px] font-medium text-muted-foreground hover:bg-surface hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed btn-press"
             >
               {syncing ? (
                 <>
-                  <Loader2 size={14} className="mr-1.5 animate-spin" />
+                  <Loader2 size={14} className="animate-spin" />
                   Syncing…
                 </>
               ) : (
                 <>
-                  <RefreshCw size={14} className="mr-1.5" />
+                  <RefreshCw size={14} />
                   Sync reviews
                 </>
               )}
-            </Button>
+            </button>
           </div>
         </div>
 
@@ -188,17 +186,17 @@ const DashboardInner = () => {
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2.5 text-sm border-b-2 -mb-px transition-colors",
+                  "flex items-center gap-2 px-3 py-2.5 text-[13px] -mb-px transition-colors",
                   active
-                    ? "border-[#D4622A] text-foreground font-medium"
-                    : "border-transparent text-muted-foreground hover:text-foreground",
+                    ? "border-b-2 border-accent text-foreground font-medium"
+                    : "border-b-2 border-transparent text-muted-foreground hover:text-foreground",
                 )}
               >
                 <span>{tab.label}</span>
                 <span
                   className={cn(
-                    "text-xs px-1.5 py-0.5 rounded-full",
-                    active ? "bg-[#FDF3EE] text-[#D4622A]" : "bg-[#F1EEE9] text-muted-foreground",
+                    "min-w-[18px] h-[18px] inline-flex items-center justify-center text-[11px] font-mono px-1 rounded-full",
+                    active ? "bg-accent-light text-accent" : "bg-muted-bg-strong text-muted-foreground",
                   )}
                 >
                   {counts[tab.key]}
@@ -210,15 +208,15 @@ const DashboardInner = () => {
       </header>
 
       {showTrialBanner && (
-        <div className="bg-[#FEF3C7] border-b border-[#FDE68A] px-6 md:px-8 py-2.5 flex items-center justify-between gap-3">
-          <div className="text-sm text-[#92400E]">
+        <div className="bg-warning-light border-b border-[hsl(38_70%_82%)] px-6 md:px-8 py-2.5 flex items-center justify-between gap-3">
+          <div className="text-sm text-[hsl(38_92%_28%)]">
             Your free trial ends {trialLabel}. Add a payment method to keep publishing.
           </div>
           <div className="flex items-center gap-2">
             <Button
               size="sm"
               variant="outline"
-              className="bg-white border-[#FDE68A] text-[#92400E] hover:bg-white"
+              className="bg-surface"
               onClick={() => toast("Billing portal coming soon.")}
             >
               Add payment →
@@ -226,7 +224,7 @@ const DashboardInner = () => {
             <button
               onClick={() => setTrialDismissed(true)}
               aria-label="Dismiss"
-              className="text-[#92400E] hover:opacity-70 p-1"
+              className="text-[hsl(38_92%_28%)] hover:opacity-70 p-1"
             >
               <X size={14} />
             </button>
@@ -235,12 +233,12 @@ const DashboardInner = () => {
       )}
 
       {tokenExpired && (
-        <div className="bg-[#FEF9C3] border-b border-[#F0D77A] px-6 md:px-8 py-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-sm text-[#713F12]">
+        <div className="bg-warning-light border-b border-[hsl(38_70%_82%)] px-6 md:px-8 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-sm text-[hsl(38_92%_28%)]">
             <AlertTriangle size={16} />
             Your Google connection needs renewal.
           </div>
-          <Button size="sm" variant="outline" className="bg-white">
+          <Button size="sm" variant="outline" className="bg-surface">
             Reconnect Google
           </Button>
         </div>
@@ -254,7 +252,7 @@ const DashboardInner = () => {
           {locations.length === 0 && !loadingLocations ? (
             <div className="flex items-center justify-center px-6 py-16">
               <div className="text-center max-w-sm">
-                <h2 className="font-serif text-[26px] mb-2">No location connected</h2>
+                <h2 className="font-serif text-[26px] mb-2 tracking-[-0.02em]">No location connected</h2>
                 <p className="text-sm text-muted-foreground">
                   Connect a Google Business location to start syncing reviews.
                 </p>
@@ -273,8 +271,8 @@ const DashboardInner = () => {
 
         {showPaywall && (
           <div className="absolute inset-0 z-10 flex items-center justify-center px-6">
-            <div className="bg-white border border-[#E8E4DF] rounded-[10px] shadow-sm p-8 max-w-sm text-center">
-              <h2 className="font-serif text-[24px] mb-2">Your subscription has ended</h2>
+            <div className="bg-surface border border-border rounded-xl shadow-sm p-8 max-w-sm text-center">
+              <h2 className="font-serif text-[24px] mb-2 tracking-[-0.02em]">Your subscription has ended</h2>
               <p className="text-sm text-muted-foreground mb-6">
                 Reactivate to keep replying to reviews.
               </p>
@@ -298,12 +296,30 @@ const DashboardInner = () => {
 const EmptyState = ({ tab }: { tab: TabKey }) => {
   if (tab === "pending") {
     return (
-      <div className="flex items-center justify-center px-6 py-16">
+      <div className="flex items-center justify-center px-6 py-20">
         <div className="text-center max-w-sm">
-          <div className="mx-auto mb-5 w-16 h-16 rounded-full bg-[#F1EEE9] flex items-center justify-center">
-            <CheckCircle2 size={32} className="text-[#16A34A]" strokeWidth={1.5} />
-          </div>
-          <h2 className="font-serif text-[26px] mb-2">All caught up</h2>
+          <svg
+            className="mx-auto mb-6"
+            width="80"
+            height="80"
+            viewBox="0 0 80 80"
+            fill="none"
+            stroke="hsl(var(--border-strong))"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M14 38v22a4 4 0 0 0 4 4h44a4 4 0 0 0 4-4V38" />
+            <path d="M14 38l8-22a4 4 0 0 1 4-3h28a4 4 0 0 1 4 3l8 22" />
+            <path d="M14 38h14l4 8h16l4-8h14" />
+            <path
+              className="check-draw"
+              d="M32 22l6 6 12-14"
+              stroke="hsl(var(--success))"
+              strokeWidth="2"
+            />
+          </svg>
+          <h2 className="font-serif text-[28px] mb-2 tracking-[-0.02em]">All caught up</h2>
           <p className="text-sm text-muted-foreground">
             New reviews will appear here when synced.
           </p>
@@ -312,8 +328,11 @@ const EmptyState = ({ tab }: { tab: TabKey }) => {
     );
   }
   return (
-    <div className="flex items-center justify-center px-6 py-16">
-      <p className="text-sm text-muted-foreground capitalize">No {tab} reviews yet.</p>
+    <div className="flex items-center justify-center px-6 py-20">
+      <div className="text-center">
+        <Inbox size={32} className="mx-auto mb-4 text-border-strong" strokeWidth={1.5} />
+        <p className="text-sm text-muted-foreground capitalize">No {tab} reviews yet.</p>
+      </div>
     </div>
   );
 };
