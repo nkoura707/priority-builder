@@ -188,51 +188,96 @@ const Onboarding = () => {
     navigate("/dashboard", { replace: true });
   };
 
+  const progressPct = ((step - 1) / 2) * 100 + 10;
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <header className="px-6 py-5 flex items-center justify-between max-w-6xl w-full mx-auto">
-        <Logo size={20} />
-        <button
-          onClick={signOut}
-          className="text-[13px] text-muted-foreground hover:text-foreground transition-colors"
-        >
-          Log out
-        </button>
-      </header>
+    <div className="min-h-screen bg-background grid grid-cols-1 lg:grid-cols-[40%_60%]">
+      {/* Left: dark animated panel */}
+      <aside
+        className="hidden lg:flex flex-col text-white p-10 relative overflow-hidden"
+        style={{
+          background:
+            "linear-gradient(180deg, hsl(var(--sidebar-bg)) 0%, hsl(222 22% 4%) 100%)",
+        }}
+      >
+        <Logo variant="light" size={20} />
 
-      <main className="flex-1 flex items-start justify-center px-6 pt-8 pb-16">
-        <div className="w-full max-w-[480px]">
-          <div className="flex items-center justify-center gap-2 mb-10" aria-label={`Step ${step} of 3`}>
-            {[1, 2, 3].map((n) => (
-              <span
-                key={n}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  n === step
-                    ? "w-8 bg-accent"
-                    : n < step
-                      ? "w-1.5 bg-accent"
-                      : "w-1.5 bg-border-strong"
-                }`}
-              />
-            ))}
+        <div className="flex-1 flex items-center justify-center relative">
+          <div className="relative w-full max-w-[320px] h-[280px]">
+            <div
+              className="absolute inset-0 bg-white/[0.04] border border-white/10 rounded-xl p-5 animate-in-fade"
+              style={{ animation: "in-fade 0.5s ease 0s both, in-fade 0.5s ease reverse 2.5s both" }}
+            >
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-[#FDE68A] text-[#7c5a00] flex items-center justify-center text-xs font-semibold">
+                  S
+                </div>
+                <div className="text-[13px] font-medium">Sarah M.</div>
+                <div className="flex gap-0.5">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Star key={i} size={11} fill="#F59E0B" stroke="none" />
+                  ))}
+                </div>
+              </div>
+              <p className="mt-3 text-[12px] text-white/60 leading-relaxed">
+                Best brunch in the neighborhood. The truffle pasta was incredible…
+              </p>
+            </div>
           </div>
+        </div>
 
-          <div className="bg-surface border border-border rounded-xl p-8">
-            {step === 1 && (
-              <Step1
-                connected={!!pendingOAuth}
-                locations={locations}
-                selectedLocation={selectedLocation}
-                setSelectedLocation={setSelectedLocation}
-                onConnect={handleConnect}
-                onContinue={handleStep1Continue}
-                saving={savingLocation}
+        <div className="text-[11px] text-white/40 tracking-wider uppercase">
+          Step {step} of 3
+        </div>
+      </aside>
+
+      {/* Right: form */}
+      <main className="flex flex-col min-h-screen">
+        <header className="px-6 lg:px-10 py-5 flex items-center justify-between">
+          <div className="lg:hidden">
+            <Logo size={20} />
+          </div>
+          <div className="lg:hidden text-[11px] text-muted-foreground tracking-wider uppercase">
+            Step {step} of 3
+          </div>
+          <button
+            onClick={signOut}
+            className="ml-auto text-[13px] text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Log out
+          </button>
+        </header>
+
+        <div className="flex-1 flex items-start justify-center px-6 lg:px-10 pt-8 pb-16">
+          <div className="w-full max-w-[480px]">
+            {/* Progress bar */}
+            <div
+              className="h-[3px] bg-muted-bg-strong rounded-full overflow-hidden mb-12"
+              aria-label={`Step ${step} of 3`}
+            >
+              <div
+                className="h-full bg-accent rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${progressPct}%` }}
               />
-            )}
-            {step === 2 && (
-              <Step2 tone={tone} setTone={setTone} onContinue={() => setStep(3)} onBack={() => setStep(1)} />
-            )}
-            {step === 3 && <Step3 onFinish={finish} finishing={finishing} onBack={() => setStep(2)} />}
+            </div>
+
+            <div className="animate-in-up">
+              {step === 1 && (
+                <Step1
+                  connected={!!pendingOAuth}
+                  locations={locations}
+                  selectedLocation={selectedLocation}
+                  setSelectedLocation={setSelectedLocation}
+                  onConnect={handleConnect}
+                  onContinue={handleStep1Continue}
+                  saving={savingLocation}
+                />
+              )}
+              {step === 2 && (
+                <Step2 tone={tone} setTone={setTone} onContinue={() => setStep(3)} onBack={() => setStep(1)} />
+              )}
+              {step === 3 && <Step3 onFinish={finish} finishing={finishing} onBack={() => setStep(2)} />}
+            </div>
           </div>
         </div>
       </main>
@@ -259,7 +304,7 @@ const Step1 = ({
   saving: boolean;
 }) => (
   <>
-    <h1 className="font-serif text-[32px] leading-tight mb-3">Connect your Google Business</h1>
+    <h1 className="font-serif text-[36px] leading-[1.05] mb-3 tracking-[-0.02em]">Connect your Google Business</h1>
     <p className="text-muted-foreground text-[15px] leading-relaxed mb-8">
       We need permission to read your reviews and post replies on your behalf. This is a one-time setup.
     </p>
@@ -332,7 +377,7 @@ const Step2 = ({
   onBack: () => void;
 }) => (
   <>
-    <h1 className="font-serif text-[32px] leading-tight mb-3">How should your replies sound?</h1>
+    <h1 className="font-serif text-[36px] leading-[1.05] mb-3 tracking-[-0.02em]">How should your replies sound?</h1>
     <p className="text-muted-foreground text-[15px] leading-relaxed mb-8">
       Pick a tone for your AI-drafted replies. You can change this anytime.
     </p>
@@ -391,7 +436,7 @@ const Step3 = ({
   onBack: () => void;
 }) => (
   <>
-    <h1 className="font-serif text-[32px] leading-tight mb-3">You're all set up.</h1>
+    <h1 className="font-serif text-[36px] leading-[1.05] mb-3 tracking-[-0.02em]">You're all set up.</h1>
     <p className="text-muted-foreground text-[15px] leading-relaxed mb-8">
       Your 7-day free trial has started. No payment needed yet — we'll remind you before it ends.
     </p>
