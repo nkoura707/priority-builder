@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Loader2, Star, RotateCcw, Undo2 } from "lucide-react";
+import { Loader2, Star, RotateCcw, Undo2, PenLine } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface ReviewRow {
   id: string;
@@ -45,9 +46,9 @@ function relativeDate(iso: string): string {
 }
 
 function borderColor(stars: number): string {
-  if (stars >= 4) return "#16A34A";
-  if (stars === 3) return "#CA8A04";
-  return "#DC2626";
+  if (stars >= 4) return "hsl(var(--success))";
+  if (stars === 3) return "hsl(var(--warning))";
+  return "hsl(var(--danger))";
 }
 
 const Stars = ({ count }: { count: number }) => (
@@ -55,7 +56,7 @@ const Stars = ({ count }: { count: number }) => (
     {[1, 2, 3, 4, 5].map((i) => (
       <Star
         key={i}
-        size={14}
+        size={15}
         fill={i <= count ? "#F59E0B" : "#D1D5DB"}
         stroke="none"
       />
@@ -64,19 +65,19 @@ const Stars = ({ count }: { count: number }) => (
 );
 
 const SkeletonCard = () => (
-  <div className="bg-white border border-[#E8E4DF] rounded-lg p-5 overflow-hidden">
+  <div className="bg-surface border border-border rounded-xl p-5 overflow-hidden">
     <div className="flex items-center gap-3">
-      <div className="h-9 w-9 rounded-full skeleton-shimmer" />
+      <div className="h-10 w-10 rounded-full skeleton-shimmer" />
       <div className="flex-1 space-y-2">
-        <div className="h-3 w-32 skeleton-shimmer rounded" />
-        <div className="h-2 w-20 skeleton-shimmer rounded" />
+        <div className="h-3 w-32 skeleton-shimmer" />
+        <div className="h-2 w-20 skeleton-shimmer" />
       </div>
     </div>
     <div className="mt-4 space-y-2">
-      <div className="h-3 w-full skeleton-shimmer rounded" />
-      <div className="h-3 w-4/5 skeleton-shimmer rounded" />
+      <div className="h-3 w-full skeleton-shimmer" />
+      <div className="h-3 w-4/5 skeleton-shimmer" />
     </div>
-    <div className="mt-5 h-20 skeleton-shimmer rounded" />
+    <div className="mt-5 h-20 skeleton-shimmer" />
   </div>
 );
 
@@ -85,14 +86,14 @@ const ReviewHeader = ({ review }: { review: ReviewRow }) => {
   return (
     <div className="flex items-center gap-3">
       <div
-        className="h-9 w-9 rounded-full flex items-center justify-center text-sm font-semibold text-[#1C1917]"
+        className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-semibold text-foreground"
         style={{ backgroundColor: avatarColor(review.reviewer_name) }}
       >
         {initial(review.reviewer_name)}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[15px] font-semibold text-[#1C1917]">
+          <span className="text-[15px] font-semibold text-foreground">
             {review.reviewer_name ?? "Anonymous"}
           </span>
           <Stars count={review.star_rating} />
@@ -100,7 +101,7 @@ const ReviewHeader = ({ review }: { review: ReviewRow }) => {
             · {relativeDate(review.review_date)}
           </span>
           {isLowStar && review.reply_status === "pending" && (
-            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-[#FEF2F2] text-[#DC2626]">
+            <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-danger-light text-danger">
               Needs response
             </span>
           )}
@@ -112,7 +113,7 @@ const ReviewHeader = ({ review }: { review: ReviewRow }) => {
 
 const ReviewBody = ({ text }: { text: string | null }) =>
   text ? (
-    <p className="text-[15px] text-[#374151] leading-[1.7] whitespace-pre-line">{text}</p>
+    <p className="text-[15px] text-foreground/80 leading-[1.7] whitespace-pre-line">{text}</p>
   ) : (
     <p className="text-sm italic text-muted-foreground">
       Left a star rating without a written review
@@ -125,23 +126,34 @@ const PendingCard = ({
   onSkip,
   onPublish,
   onDraftChange,
+  index,
 }: {
   review: ReviewRow;
   onRegenerate: (id: string) => void;
   onSkip: (id: string) => void;
   onPublish: (id: string, text: string) => void;
   onDraftChange: (id: string, text: string) => void;
+  index: number;
 }) => {
   const [confirmingSkip, setConfirmingSkip] = useState(false);
   const [busy, setBusy] = useState<"regen" | "publish" | "skip" | null>(null);
+  const [publishedAnim, setPublishedAnim] = useState(false);
 
   const draft = review.ai_generated_reply ?? "";
   const isGenerating = review.ai_generated_reply === null;
+  const charCount = draft.length;
+  const charLimit = 600;
 
   return (
     <article
-      className="bg-white border border-[#E8E4DF] rounded-lg overflow-hidden"
-      style={{ borderLeft: `4px solid ${borderColor(review.star_rating)}` }}
+      className={cn(
+        "bg-surface border border-border rounded-xl overflow-hidden hover-lift animate-in-up",
+        publishedAnim && "opacity-0 scale-95 translate-y-2 transition-all duration-300",
+      )}
+      style={{
+        borderLeft: `3px solid ${borderColor(review.star_rating)}`,
+        animationDelay: `${Math.min(index, 6) * 60}ms`,
+      }}
     >
       <div className="p-5">
         <ReviewHeader review={review} />
@@ -149,22 +161,30 @@ const PendingCard = ({
           <ReviewBody text={review.review_text} />
         </div>
 
-        <div className="my-5 border-t border-dashed border-[#E8E4DF]" />
+        <div className="my-5 border-t border-dashed border-border" />
 
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-[11px] uppercase tracking-wider font-medium text-[#D4622A]">
+        <div className="flex items-center gap-1.5 mb-2">
+          <PenLine size={12} className="text-accent" />
+          <span className="text-[11px] uppercase tracking-[0.08em] font-medium text-accent">
             Draft reply
           </span>
-          {isGenerating && <Loader2 size={12} className="animate-spin text-[#D4622A]" />}
+          {isGenerating && <Loader2 size={12} className="animate-spin text-accent" />}
         </div>
 
-        <textarea
-          value={draft}
-          onChange={(e) => onDraftChange(review.id, e.target.value)}
-          placeholder={isGenerating ? "Generating reply..." : "Write your reply..."}
-          disabled={isGenerating}
-          className="w-full bg-[#FFFBEB] border border-[#E8C87A] rounded-md p-3 text-[14px] text-[#1C1917] leading-relaxed resize-y min-h-[80px] focus:outline-none focus:ring-2 focus:ring-[#D4622A]/30"
-        />
+        <div className="relative focus-glow rounded-lg transition-all">
+          <textarea
+            value={draft}
+            onChange={(e) => onDraftChange(review.id, e.target.value)}
+            placeholder={isGenerating ? "Generating reply..." : "Write your reply..."}
+            disabled={isGenerating}
+            className="w-full bg-draft-bg border border-draft-border rounded-lg p-3 pb-7 text-[14px] text-foreground leading-relaxed resize-y min-h-[88px] focus:outline-none focus:bg-[hsl(48_100%_94%)] transition-colors"
+          />
+          {!isGenerating && (
+            <span className="absolute bottom-2 right-3 text-[11px] font-mono text-muted-foreground/70 pointer-events-none">
+              {charCount} / {charLimit}
+            </span>
+          )}
+        </div>
 
         <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-3">
@@ -189,7 +209,7 @@ const PendingCard = ({
               <span className="text-sm flex items-center gap-2">
                 <span className="text-muted-foreground">Skip this review?</span>
                 <button
-                  className="text-[#DC2626] font-medium hover:underline"
+                  className="text-danger font-medium hover:underline"
                   onClick={async () => {
                     setBusy("skip");
                     await onSkip(review.id);
@@ -221,6 +241,8 @@ const PendingCard = ({
             disabled={!draft || isGenerating || busy !== null}
             onClick={async () => {
               setBusy("publish");
+              setPublishedAnim(true);
+              await new Promise((r) => setTimeout(r, 280));
               await onPublish(review.id, draft);
               setBusy(null);
             }}
@@ -233,19 +255,22 @@ const PendingCard = ({
   );
 };
 
-const PublishedCard = ({ review }: { review: ReviewRow }) => (
+const PublishedCard = ({ review, index }: { review: ReviewRow; index: number }) => (
   <article
-    className="bg-white border border-[#E8E4DF] rounded-lg overflow-hidden"
-    style={{ borderLeft: `4px solid ${borderColor(review.star_rating)}` }}
+    className="bg-surface border border-border rounded-xl overflow-hidden hover-lift animate-in-up"
+    style={{
+      borderLeft: `3px solid ${borderColor(review.star_rating)}`,
+      animationDelay: `${Math.min(index, 6) * 60}ms`,
+    }}
   >
     <div className="p-5">
       <ReviewHeader review={review} />
       <div className="mt-4">
         <ReviewBody text={review.review_text} />
       </div>
-      <div className="my-5 border-t border-dashed border-[#E8E4DF]" />
+      <div className="my-5 border-t border-dashed border-border" />
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-[11px] uppercase tracking-wider font-medium text-[#16A34A]">
+        <span className="text-[11px] uppercase tracking-[0.08em] font-medium text-success">
           Published reply
         </span>
         {review.published_at && (
@@ -254,7 +279,7 @@ const PublishedCard = ({ review }: { review: ReviewRow }) => (
           </span>
         )}
       </div>
-      <p className="text-[14px] text-[#1C1917] leading-relaxed whitespace-pre-line bg-[#F1FBF4] border border-[#BBF0C9] rounded-md p-3">
+      <p className="text-[14px] text-foreground leading-relaxed whitespace-pre-line bg-success-light border border-[hsl(158_50%_82%)] rounded-lg p-3">
         {review.reply_text ?? ""}
       </p>
     </div>
@@ -264,15 +289,20 @@ const PublishedCard = ({ review }: { review: ReviewRow }) => (
 const SkippedCard = ({
   review,
   onRestore,
+  index,
 }: {
   review: ReviewRow;
   onRestore: (id: string) => void;
+  index: number;
 }) => {
   const [busy, setBusy] = useState(false);
   return (
     <article
-      className="bg-white border border-[#E8E4DF] rounded-lg overflow-hidden opacity-90"
-      style={{ borderLeft: `4px solid ${borderColor(review.star_rating)}` }}
+      className="bg-surface border border-border rounded-xl overflow-hidden opacity-90 animate-in-up"
+      style={{
+        borderLeft: `3px solid ${borderColor(review.star_rating)}`,
+        animationDelay: `${Math.min(index, 6) * 60}ms`,
+      }}
     >
       <div className="p-5">
         <ReviewHeader review={review} />
@@ -401,14 +431,15 @@ export const ReviewsList = ({
 
   return (
     <div className="space-y-4 max-w-3xl mx-auto px-6 py-6">
-      {reviews.map((r) => {
-        if (status === "published") return <PublishedCard key={r.id} review={r} />;
+      {reviews.map((r, idx) => {
+        if (status === "published") return <PublishedCard key={r.id} review={r} index={idx} />;
         if (status === "skipped")
-          return <SkippedCard key={r.id} review={r} onRestore={handleRestore} />;
+          return <SkippedCard key={r.id} review={r} onRestore={handleRestore} index={idx} />;
         return (
           <PendingCard
             key={r.id}
             review={r}
+            index={idx}
             onRegenerate={handleRegenerate}
             onSkip={handleSkip}
             onPublish={handlePublish}
