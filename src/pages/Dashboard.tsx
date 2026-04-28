@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
-import { RefreshCw, AlertTriangle, Loader2, X, Plus, Inbox } from "lucide-react";
+import { RefreshCw, AlertTriangle, Loader2, X, Inbox } from "lucide-react";
 import { DashboardLayout, useDashboardLocation } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { ReviewsList } from "@/components/dashboard/ReviewsList";
-import { AddReviewSheet } from "@/components/dashboard/AddReviewSheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -25,7 +24,6 @@ const DashboardInner = () => {
   const [syncing, setSyncing] = useState(false);
   const [tokenExpired, setTokenExpired] = useState(false);
   const [autoSynced, setAutoSynced] = useState(false);
-  const [addOpen, setAddOpen] = useState(false);
 
   // Subscription state
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
@@ -149,14 +147,6 @@ const DashboardInner = () => {
         <div className="flex items-center justify-between px-6 md:px-8 h-[58px] pl-16 md:pl-8 gap-3">
           <h1 className="font-serif text-[22px] leading-none tracking-[-0.02em]">Review Inbox</h1>
           <div className="flex items-center gap-1 bg-muted-bg rounded-lg p-1">
-            <button
-              type="button"
-              onClick={() => setAddOpen(true)}
-              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[13px] font-medium text-foreground hover:bg-surface transition-colors btn-press"
-            >
-              <Plus size={14} className="text-accent" />
-              Add review
-            </button>
             <button
               type="button"
               onClick={() => runSync(false)}
