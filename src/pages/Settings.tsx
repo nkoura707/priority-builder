@@ -4,12 +4,14 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 type Tone = "professional" | "friendly" | "formal";
+type Scope = "all" | "four_plus" | "five_only";
 
 const TONES: { id: Tone; name: string; description: string }[] = [
   { id: "professional", name: "Professional", description: "Warm but composed. Works for most businesses." },
