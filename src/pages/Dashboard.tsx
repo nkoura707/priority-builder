@@ -273,12 +273,6 @@ const DashboardInner = () => {
           </div>
         )}
       </div>
-
-      <AddReviewSheet
-        open={addOpen}
-        onOpenChange={setAddOpen}
-        locationId={selectedLocationId}
-      />
     </>
   );
 };
