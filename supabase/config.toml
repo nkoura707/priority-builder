@@ -1,1 +1,7 @@
 project_id = "nlfitmztskccgokrenzd"
+
+[functions.cron-sync-reviews]
+verify_jwt = false
+
+[functions.cron-publish-replies]
+verify_jwt = false

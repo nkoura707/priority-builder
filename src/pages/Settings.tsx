@@ -4,12 +4,14 @@ import { DashboardLayout } from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 type Tone = "professional" | "friendly" | "formal";
+type Scope = "all" | "four_plus" | "five_only";
 
 const TONES: { id: Tone; name: string; description: string }[] = [
   { id: "professional", name: "Professional", description: "Warm but composed. Works for most businesses." },
@@ -62,6 +64,13 @@ const SettingsInner = () => {
   const [locationCount, setLocationCount] = useState(0);
   const [savingTone, setSavingTone] = useState(false);
 
+  // Auto-reply
+  const [autoEnabled, setAutoEnabled] = useState(true);
+  const [autoMin, setAutoMin] = useState(120);
+  const [autoMax, setAutoMax] = useState(360);
+  const [autoScope, setAutoScope] = useState<Scope>("all");
+  const [savingAuto, setSavingAuto] = useState(false);
+
   useEffect(() => {
     if (!user) return;
     (async () => {
@@ -74,7 +83,7 @@ const SettingsInner = () => {
           .maybeSingle(),
         supabase
           .from("locations")
-          .select("id, reply_tone")
+          .select("id, reply_tone, auto_reply_enabled, auto_reply_min_minutes, auto_reply_max_minutes, auto_reply_scope")
           .eq("user_id", user.id)
           .order("created_at", { ascending: true }),
       ]);
@@ -86,7 +95,12 @@ const SettingsInner = () => {
       setTrialEndsAt(profile?.trial_ends_at ?? null);
 
       if (locs && locs.length > 0) {
-        setTone((locs[0].reply_tone as Tone) ?? "professional");
+        const first = locs[0];
+        setTone((first.reply_tone as Tone) ?? "professional");
+        setAutoEnabled(first.auto_reply_enabled ?? true);
+        setAutoMin(first.auto_reply_min_minutes ?? 120);
+        setAutoMax(first.auto_reply_max_minutes ?? 360);
+        setAutoScope((first.auto_reply_scope as Scope) ?? "all");
         setLocationCount(locs.length);
       }
       setLoading(false);
@@ -139,6 +153,32 @@ const SettingsInner = () => {
       return;
     }
     toast("Reply tone saved", {
+      style: { background: "#1C1917", color: "#fff", border: "none" },
+    });
+  };
+
+  const handleSaveAuto = async () => {
+    if (!user) return;
+    if (autoMin < 1 || autoMax < autoMin) {
+      toast.error("Max delay must be greater than min delay");
+      return;
+    }
+    setSavingAuto(true);
+    const { error } = await supabase
+      .from("locations")
+      .update({
+        auto_reply_enabled: autoEnabled,
+        auto_reply_min_minutes: autoMin,
+        auto_reply_max_minutes: autoMax,
+        auto_reply_scope: autoScope,
+      })
+      .eq("user_id", user.id);
+    setSavingAuto(false);
+    if (error) {
+      toast.error("Couldn't save auto-reply settings");
+      return;
+    }
+    toast("Auto-reply settings saved", {
       style: { background: "#1C1917", color: "#fff", border: "none" },
     });
   };
@@ -257,6 +297,91 @@ const SettingsInner = () => {
                   </>
                 ) : (
                   "Save preferences"
+                )}
+              </Button>
+            </Card>
+
+            {/* Auto-reply */}
+            <Card title="Auto-reply">
+              <p className="text-xs text-muted-foreground mb-4">
+                Replies are generated automatically and published with a randomized delay so they look natural to Google.
+              </p>
+
+              <div className="flex items-center justify-between py-3 border-b border-border">
+                <div>
+                  <div className="text-[14px] font-medium">Enable auto-reply</div>
+                  <div className="text-[13px] text-muted-foreground mt-0.5">
+                    {autoEnabled ? "New reviews are replied to automatically." : "Replies stay as drafts in Pending."}
+                  </div>
+                </div>
+                <Switch checked={autoEnabled} onCheckedChange={setAutoEnabled} />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 py-4 border-b border-border">
+                <div>
+                  <Label htmlFor="auto_min" className="text-sm">Min delay (minutes)</Label>
+                  <Input
+                    id="auto_min"
+                    type="number"
+                    min={1}
+                    value={autoMin}
+                    onChange={(e) => setAutoMin(Number(e.target.value) || 0)}
+                    disabled={!autoEnabled}
+                    className="mt-1.5"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="auto_max" className="text-sm">Max delay (minutes)</Label>
+                  <Input
+                    id="auto_max"
+                    type="number"
+                    min={1}
+                    value={autoMax}
+                    onChange={(e) => setAutoMax(Number(e.target.value) || 0)}
+                    disabled={!autoEnabled}
+                    className="mt-1.5"
+                  />
+                </div>
+              </div>
+
+              <div className="py-4">
+                <Label className="text-sm mb-2 block">Reply to</Label>
+                <div className="space-y-2">
+                  {([
+                    { id: "all", label: "All reviews", desc: "Every new review gets a reply." },
+                    { id: "four_plus", label: "4–5 star reviews only", desc: "Negative reviews stay in Pending for you to handle." },
+                    { id: "five_only", label: "5 star reviews only", desc: "Most conservative — only perfect ratings." },
+                  ] as { id: Scope; label: string; desc: string }[]).map((s) => {
+                    const active = autoScope === s.id;
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        disabled={!autoEnabled}
+                        onClick={() => setAutoScope(s.id)}
+                        className={cn(
+                          "w-full text-left p-3 rounded-lg border transition-all disabled:opacity-50",
+                          active
+                            ? "border-[#D4622A] bg-[#FDF3EE] border-2"
+                            : "border-[#E8E4DF] hover:border-[#D4C8BA] bg-white",
+                        )}
+                      >
+                        <div className="text-[14px] font-medium">{s.label}</div>
+                        <div className="text-[13px] text-muted-foreground mt-0.5">{s.desc}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <Button onClick={handleSaveAuto} disabled={savingAuto || locationCount === 0} size="sm">
+                {savingAuto ? (
+                  <>
+                    <Loader2 size={14} className="mr-1.5 animate-spin" />
+                    Saving…
+                  </>
+                ) : (
+                  "Save auto-reply settings"
                 )}
               </Button>
             </Card>
