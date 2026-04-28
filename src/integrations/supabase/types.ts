@@ -17,6 +17,10 @@ export type Database = {
       locations: {
         Row: {
           address: string | null
+          auto_reply_enabled: boolean
+          auto_reply_max_minutes: number
+          auto_reply_min_minutes: number
+          auto_reply_scope: string
           business_name: string
           created_at: string
           google_access_token: string
@@ -31,6 +35,10 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          auto_reply_enabled?: boolean
+          auto_reply_max_minutes?: number
+          auto_reply_min_minutes?: number
+          auto_reply_scope?: string
           business_name: string
           created_at?: string
           google_access_token: string
@@ -45,6 +53,10 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          auto_reply_enabled?: boolean
+          auto_reply_max_minutes?: number
+          auto_reply_min_minutes?: number
+          auto_reply_scope?: string
           business_name?: string
           created_at?: string
           google_access_token?: string
@@ -119,6 +131,7 @@ export type Database = {
           review_date: string
           review_text: string | null
           reviewer_name: string | null
+          scheduled_publish_at: string | null
           star_rating: number
           updated_at: string
         }
@@ -134,6 +147,7 @@ export type Database = {
           review_date: string
           review_text?: string | null
           reviewer_name?: string | null
+          scheduled_publish_at?: string | null
           star_rating: number
           updated_at?: string
         }
@@ -149,6 +163,7 @@ export type Database = {
           review_date?: string
           review_text?: string | null
           reviewer_name?: string | null
+          scheduled_publish_at?: string | null
           star_rating?: number
           updated_at?: string
         }
