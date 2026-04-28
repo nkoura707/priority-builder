@@ -300,6 +300,91 @@ const SettingsInner = () => {
                 )}
               </Button>
             </Card>
+
+            {/* Auto-reply */}
+            <Card title="Auto-reply">
+              <p className="text-xs text-muted-foreground mb-4">
+                Replies are generated automatically and published with a randomized delay so they look natural to Google.
+              </p>
+
+              <div className="flex items-center justify-between py-3 border-b border-border">
+                <div>
+                  <div className="text-[14px] font-medium">Enable auto-reply</div>
+                  <div className="text-[13px] text-muted-foreground mt-0.5">
+                    {autoEnabled ? "New reviews are replied to automatically." : "Replies stay as drafts in Pending."}
+                  </div>
+                </div>
+                <Switch checked={autoEnabled} onCheckedChange={setAutoEnabled} />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 py-4 border-b border-border">
+                <div>
+                  <Label htmlFor="auto_min" className="text-sm">Min delay (minutes)</Label>
+                  <Input
+                    id="auto_min"
+                    type="number"
+                    min={1}
+                    value={autoMin}
+                    onChange={(e) => setAutoMin(Number(e.target.value) || 0)}
+                    disabled={!autoEnabled}
+                    className="mt-1.5"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="auto_max" className="text-sm">Max delay (minutes)</Label>
+                  <Input
+                    id="auto_max"
+                    type="number"
+                    min={1}
+                    value={autoMax}
+                    onChange={(e) => setAutoMax(Number(e.target.value) || 0)}
+                    disabled={!autoEnabled}
+                    className="mt-1.5"
+                  />
+                </div>
+              </div>
+
+              <div className="py-4">
+                <Label className="text-sm mb-2 block">Reply to</Label>
+                <div className="space-y-2">
+                  {([
+                    { id: "all", label: "All reviews", desc: "Every new review gets a reply." },
+                    { id: "four_plus", label: "4–5 star reviews only", desc: "Negative reviews stay in Pending for you to handle." },
+                    { id: "five_only", label: "5 star reviews only", desc: "Most conservative — only perfect ratings." },
+                  ] as { id: Scope; label: string; desc: string }[]).map((s) => {
+                    const active = autoScope === s.id;
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        disabled={!autoEnabled}
+                        onClick={() => setAutoScope(s.id)}
+                        className={cn(
+                          "w-full text-left p-3 rounded-lg border transition-all disabled:opacity-50",
+                          active
+                            ? "border-[#D4622A] bg-[#FDF3EE] border-2"
+                            : "border-[#E8E4DF] hover:border-[#D4C8BA] bg-white",
+                        )}
+                      >
+                        <div className="text-[14px] font-medium">{s.label}</div>
+                        <div className="text-[13px] text-muted-foreground mt-0.5">{s.desc}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <Button onClick={handleSaveAuto} disabled={savingAuto || locationCount === 0} size="sm">
+                {savingAuto ? (
+                  <>
+                    <Loader2 size={14} className="mr-1.5 animate-spin" />
+                    Saving…
+                  </>
+                ) : (
+                  "Save auto-reply settings"
+                )}
+              </Button>
+            </Card>
           </>
         )}
       </main>
