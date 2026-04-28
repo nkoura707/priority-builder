@@ -64,6 +64,13 @@ const SettingsInner = () => {
   const [locationCount, setLocationCount] = useState(0);
   const [savingTone, setSavingTone] = useState(false);
 
+  // Auto-reply
+  const [autoEnabled, setAutoEnabled] = useState(true);
+  const [autoMin, setAutoMin] = useState(120);
+  const [autoMax, setAutoMax] = useState(360);
+  const [autoScope, setAutoScope] = useState<Scope>("all");
+  const [savingAuto, setSavingAuto] = useState(false);
+
   useEffect(() => {
     if (!user) return;
     (async () => {
@@ -76,7 +83,7 @@ const SettingsInner = () => {
           .maybeSingle(),
         supabase
           .from("locations")
-          .select("id, reply_tone")
+          .select("id, reply_tone, auto_reply_enabled, auto_reply_min_minutes, auto_reply_max_minutes, auto_reply_scope")
           .eq("user_id", user.id)
           .order("created_at", { ascending: true }),
       ]);
@@ -88,7 +95,12 @@ const SettingsInner = () => {
       setTrialEndsAt(profile?.trial_ends_at ?? null);
 
       if (locs && locs.length > 0) {
-        setTone((locs[0].reply_tone as Tone) ?? "professional");
+        const first = locs[0];
+        setTone((first.reply_tone as Tone) ?? "professional");
+        setAutoEnabled(first.auto_reply_enabled ?? true);
+        setAutoMin(first.auto_reply_min_minutes ?? 120);
+        setAutoMax(first.auto_reply_max_minutes ?? 360);
+        setAutoScope((first.auto_reply_scope as Scope) ?? "all");
         setLocationCount(locs.length);
       }
       setLoading(false);
@@ -141,6 +153,32 @@ const SettingsInner = () => {
       return;
     }
     toast("Reply tone saved", {
+      style: { background: "#1C1917", color: "#fff", border: "none" },
+    });
+  };
+
+  const handleSaveAuto = async () => {
+    if (!user) return;
+    if (autoMin < 1 || autoMax < autoMin) {
+      toast.error("Max delay must be greater than min delay");
+      return;
+    }
+    setSavingAuto(true);
+    const { error } = await supabase
+      .from("locations")
+      .update({
+        auto_reply_enabled: autoEnabled,
+        auto_reply_min_minutes: autoMin,
+        auto_reply_max_minutes: autoMax,
+        auto_reply_scope: autoScope,
+      })
+      .eq("user_id", user.id);
+    setSavingAuto(false);
+    if (error) {
+      toast.error("Couldn't save auto-reply settings");
+      return;
+    }
+    toast("Auto-reply settings saved", {
       style: { background: "#1C1917", color: "#fff", border: "none" },
     });
   };
