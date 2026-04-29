@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/Logo";
-import { Star, Check, ArrowRight } from "lucide-react";
+import { Star, Check, ArrowRight, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const Stars = ({ count = 5, size = 14 }: { count?: number; size?: number }) => (
@@ -429,49 +429,7 @@ const Index = () => {
         </section>
 
         {/* Pricing */}
-        <section ref={pricingRef.ref} className="border-b border-border">
-          <div className="max-w-3xl mx-auto px-6 py-24 md:py-32 text-center">
-            <div className="label-tiny text-accent mb-3">Pricing</div>
-            <h2 className="font-serif text-[40px] md:text-[48px] text-foreground tracking-[-0.02em] leading-[1.05]">
-              Simple pricing.
-            </h2>
-            <p className="mt-3 text-muted-foreground text-[15px]">
-              One plan. Everything included. Cancel whenever.
-            </p>
-
-            <div
-              className={cn(
-                "mt-12 mx-auto max-w-[440px] rounded-[13px] p-px",
-                pricingRef.inView && "animate-in-up",
-              )}
-              style={{
-                background: "linear-gradient(135deg, hsl(var(--accent)) 0%, #E8A87C 100%)",
-              }}
-            >
-              <div className="bg-surface rounded-[12px] p-10 text-left">
-                <div className="flex items-center justify-between">
-                  <div className="label-tiny text-accent">Growth</div>
-                  <span
-                    className="text-[11px] font-semibold uppercase tracking-wider"
-                    style={{
-                      background: "linear-gradient(135deg, hsl(var(--accent)) 0%, #E8A87C 100%)",
-                      WebkitBackgroundClip: "text",
-                      backgroundClip: "text",
-                      color: "transparent",
-                    }}
-                  >
-                    Most popular
-                  </span>
-                </div>
-                <div className="mt-4 flex items-baseline gap-2">
-                  <span className="font-serif text-[64px] leading-none text-foreground tracking-[-0.03em]">
-                    $29
-                  </span>
-                  <span className="text-[16px] text-muted-foreground">/month</span>
-                </div>
-                <div className="mt-1 text-[13px] text-muted-foreground">
-                  per location · billed monthly
-                </div>
+        <PricingSection inView={pricingRef.inView} sectionRef={pricingRef.ref} />
 
                 <ul className="mt-8 space-y-3">
                   {[
