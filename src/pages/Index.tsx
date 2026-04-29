@@ -430,43 +430,6 @@ const Index = () => {
 
         {/* Pricing */}
         <PricingSection inView={pricingRef.inView} sectionRef={pricingRef.ref} />
-
-                <ul className="mt-8 space-y-3">
-                  {[
-                    "Unlimited AI-generated replies",
-                    "Direct publish to Google",
-                    "All star ratings handled",
-                    "Tone customization",
-                    "Multiple locations supported",
-                    "New review notifications (coming soon)",
-                  ].map((f, i) => (
-                    <li
-                      key={f}
-                      className={cn(
-                        "flex items-start gap-3 text-[15px] text-foreground",
-                        pricingRef.inView && "animate-in-fade",
-                      )}
-                      style={pricingRef.inView ? { animationDelay: `${300 + i * 60}ms` } : { opacity: 0 }}
-                    >
-                      <Check className="w-4 h-4 mt-1 text-accent shrink-0" strokeWidth={2.5} />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Button asChild className="mt-8 w-full h-12 text-[15px] group">
-                  <Link to="/login">
-                    Start 7-day free trial
-                    <ArrowRight size={16} className="arrow-nudge" />
-                  </Link>
-                </Button>
-                <p className="mt-4 text-center text-[12px] text-muted-foreground">
-                  Cancel anytime from your dashboard. No hidden fees.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
 
       {/* Footer */}
