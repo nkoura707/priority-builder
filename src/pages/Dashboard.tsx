@@ -129,13 +129,28 @@ const DashboardInner = () => {
   // Trial banner calculation
   const showTrialBanner =
     subscriptionStatus === "trialing" && trialEndsAt && !trialDismissed;
-  let trialLabel = "";
+  let trialMessage = "";
+  let trialUrgency: "normal" | "warn" | "critical" = "normal";
+  let daysLeft = 0;
   if (showTrialBanner) {
     const msLeft = new Date(trialEndsAt!).getTime() - Date.now();
-    const daysLeft = Math.ceil(msLeft / 86400000);
-    if (daysLeft < 1) trialLabel = "today";
-    else if (daysLeft === 1) trialLabel = "tomorrow";
-    else trialLabel = `in ${daysLeft} days`;
+    daysLeft = Math.ceil(msLeft / 86400000);
+    if (daysLeft <= 0) {
+      trialMessage = "🔴 Your trial ends today.";
+      trialUrgency = "critical";
+    } else if (daysLeft === 1) {
+      trialMessage = "🔴 Trial ends tomorrow — don't lose your review replies.";
+      trialUrgency = "critical";
+    } else if (daysLeft <= 3) {
+      trialMessage = `🔴 Trial ends in ${daysLeft} days — don't lose your review replies.`;
+      trialUrgency = "critical";
+    } else if (daysLeft <= 7) {
+      trialMessage = `⚡ Your trial ends in ${daysLeft} days — add a payment method to keep your replies going.`;
+      trialUrgency = "warn";
+    } else {
+      trialMessage = `Your free trial ends in ${daysLeft} days.`;
+      trialUrgency = "normal";
+    }
   }
 
   const showPaywall = subscriptionStatus === "canceled" || subscriptionStatus === "past_due";
@@ -198,9 +213,17 @@ const DashboardInner = () => {
       </header>
 
       {showTrialBanner && (
-        <div className="bg-warning-light border-b border-[hsl(38_70%_82%)] px-6 md:px-8 py-2.5 flex items-center justify-between gap-3">
-          <div className="text-sm text-[hsl(38_92%_28%)]">
-            Your free trial ends {trialLabel}. Add a payment method to keep publishing.
+        <div className={cn(
+          "border-b px-6 md:px-8 py-2.5 flex items-center justify-between gap-3",
+          trialUrgency === "critical"
+            ? "bg-danger-light border-[hsl(0_70%_82%)]"
+            : "bg-warning-light border-[hsl(38_70%_82%)]"
+        )}>
+          <div className={cn(
+            "text-sm",
+            trialUrgency === "critical" ? "text-danger" : "text-[hsl(38_92%_28%)]"
+          )}>
+            {trialMessage}
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -267,7 +290,7 @@ const DashboardInner = () => {
                 Reactivate to keep replying to reviews.
               </p>
               <Button onClick={() => toast("Billing portal coming soon.")} className="w-full">
-                Reactivate — $29/month
+                Reactivate subscription
               </Button>
             </div>
           </div>
