@@ -186,7 +186,7 @@ const Index = () => {
               <div className="mt-10 animate-in-up" style={{ animationDelay: "650ms" }}>
                 <Button asChild size="lg" className="group h-12 px-8 text-[15px]">
                   <Link to="/login">
-                    Start free — 7 days
+                    Start free — 14 days
                     <ArrowRight size={16} className="arrow-nudge" />
                   </Link>
                 </Button>
