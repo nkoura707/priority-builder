@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/Logo";
-import { Star, Check, ArrowRight } from "lucide-react";
+import { Star, Check, ArrowRight, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const Stars = ({ count = 5, size = 14 }: { count?: number; size?: number }) => (
@@ -186,7 +186,7 @@ const Index = () => {
               <div className="mt-10 animate-in-up" style={{ animationDelay: "650ms" }}>
                 <Button asChild size="lg" className="group h-12 px-8 text-[15px]">
                   <Link to="/login">
-                    Start free — 7 days
+                    Start free — 14 days
                     <ArrowRight size={16} className="arrow-nudge" />
                   </Link>
                 </Button>
@@ -429,86 +429,7 @@ const Index = () => {
         </section>
 
         {/* Pricing */}
-        <section ref={pricingRef.ref} className="border-b border-border">
-          <div className="max-w-3xl mx-auto px-6 py-24 md:py-32 text-center">
-            <div className="label-tiny text-accent mb-3">Pricing</div>
-            <h2 className="font-serif text-[40px] md:text-[48px] text-foreground tracking-[-0.02em] leading-[1.05]">
-              Simple pricing.
-            </h2>
-            <p className="mt-3 text-muted-foreground text-[15px]">
-              One plan. Everything included. Cancel whenever.
-            </p>
-
-            <div
-              className={cn(
-                "mt-12 mx-auto max-w-[440px] rounded-[13px] p-px",
-                pricingRef.inView && "animate-in-up",
-              )}
-              style={{
-                background: "linear-gradient(135deg, hsl(var(--accent)) 0%, #E8A87C 100%)",
-              }}
-            >
-              <div className="bg-surface rounded-[12px] p-10 text-left">
-                <div className="flex items-center justify-between">
-                  <div className="label-tiny text-accent">Growth</div>
-                  <span
-                    className="text-[11px] font-semibold uppercase tracking-wider"
-                    style={{
-                      background: "linear-gradient(135deg, hsl(var(--accent)) 0%, #E8A87C 100%)",
-                      WebkitBackgroundClip: "text",
-                      backgroundClip: "text",
-                      color: "transparent",
-                    }}
-                  >
-                    Most popular
-                  </span>
-                </div>
-                <div className="mt-4 flex items-baseline gap-2">
-                  <span className="font-serif text-[64px] leading-none text-foreground tracking-[-0.03em]">
-                    $29
-                  </span>
-                  <span className="text-[16px] text-muted-foreground">/month</span>
-                </div>
-                <div className="mt-1 text-[13px] text-muted-foreground">
-                  per location · billed monthly
-                </div>
-
-                <ul className="mt-8 space-y-3">
-                  {[
-                    "Unlimited AI-generated replies",
-                    "Direct publish to Google",
-                    "All star ratings handled",
-                    "Tone customization",
-                    "Multiple locations supported",
-                    "New review notifications (coming soon)",
-                  ].map((f, i) => (
-                    <li
-                      key={f}
-                      className={cn(
-                        "flex items-start gap-3 text-[15px] text-foreground",
-                        pricingRef.inView && "animate-in-fade",
-                      )}
-                      style={pricingRef.inView ? { animationDelay: `${300 + i * 60}ms` } : { opacity: 0 }}
-                    >
-                      <Check className="w-4 h-4 mt-1 text-accent shrink-0" strokeWidth={2.5} />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Button asChild className="mt-8 w-full h-12 text-[15px] group">
-                  <Link to="/login">
-                    Start 7-day free trial
-                    <ArrowRight size={16} className="arrow-nudge" />
-                  </Link>
-                </Button>
-                <p className="mt-4 text-center text-[12px] text-muted-foreground">
-                  Cancel anytime from your dashboard. No hidden fees.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
+        <PricingSection inView={pricingRef.inView} sectionRef={pricingRef.ref} />
       </main>
 
       {/* Footer */}
@@ -536,4 +457,306 @@ const Index = () => {
   );
 };
 
+/* ---------------- Pricing Section ---------------- */
+
+type Plan = {
+  id: "starter" | "growth" | "agency";
+  name: string;
+  monthly: number;
+  yearly: number;
+  yearlyTotal: number;
+  subtitle: string;
+  description: string;
+  features: string[];
+  unavailable?: string[];
+  featured?: boolean;
+  ctaVariant: "default" | "outline";
+  ctaSubline?: string;
+};
+
+const PLANS: Plan[] = [
+  {
+    id: "starter",
+    name: "Starter",
+    monthly: 39,
+    yearly: 32,
+    yearlyTotal: 384,
+    subtitle: "1 location · billed monthly",
+    description: "For single-location owners who want to stay on top of reviews.",
+    features: [
+      "Unlimited AI-generated replies",
+      "Manual add + publish workflow",
+      "3 tone presets (professional, friendly, formal)",
+      "Review inbox dashboard",
+      "14-day free trial",
+    ],
+    unavailable: ["Auto-reply scheduling", "Multiple locations"],
+    ctaVariant: "outline",
+  },
+  {
+    id: "growth",
+    name: "Growth",
+    monthly: 69,
+    yearly: 57,
+    yearlyTotal: 684,
+    subtitle: "Up to 3 locations · billed monthly",
+    description: "For busy owners who want replies to go out automatically.",
+    features: [
+      "Everything in Starter",
+      "Auto-reply scheduling (2–6hr delay)",
+      "Reply scope filter (all / 4★+ / 5★ only)",
+      "Up to 3 locations",
+      "Hourly automatic review sync",
+      "Priority AI generation",
+    ],
+    featured: true,
+    ctaVariant: "default",
+    ctaSubline: "Most chosen by dental clinics & med spas",
+  },
+  {
+    id: "agency",
+    name: "Agency",
+    monthly: 149,
+    yearly: 124,
+    yearlyTotal: 1488,
+    subtitle: "Unlimited locations · billed monthly",
+    description: "For agencies and groups managing multiple business profiles.",
+    features: [
+      "Everything in Growth",
+      "Unlimited locations",
+      "Per-location tone settings",
+      "Priority support",
+      "Dedicated onboarding call",
+    ],
+    ctaVariant: "outline",
+  },
+];
+
+const PricingSection = ({
+  inView,
+  sectionRef,
+}: {
+  inView: boolean;
+  sectionRef: React.RefObject<HTMLDivElement>;
+}) => {
+  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
+  const [compareOpen, setCompareOpen] = useState(false);
+  const spotsTaken = 31;
+  const spotsTotal = 50;
+  const spotsLeft = spotsTotal - spotsTaken;
+
+  return (
+    <section ref={sectionRef} className="border-b border-border">
+      <div className="max-w-6xl mx-auto px-6 py-24 md:py-32">
+        <div className="text-center">
+          <div className="label-tiny text-accent mb-3">Pricing</div>
+          <h2 className="font-serif text-[40px] md:text-[48px] text-foreground tracking-[-0.02em] leading-[1.05]">
+            Simple pricing.
+          </h2>
+          <p className="mt-3 text-muted-foreground text-[15px]">
+            Pick the plan that fits. Upgrade or cancel anytime.
+          </p>
+        </div>
+
+        {/* Founding member banner */}
+        <div
+          className="mt-10 mx-auto max-w-3xl rounded-[10px] px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+          style={{ backgroundColor: "#FEF2EC", border: "1px solid #F5C4A0" }}
+        >
+          <div>
+            <span className="inline-block text-[10px] font-semibold uppercase tracking-wider text-accent mb-1">
+              Limited offer
+            </span>
+            <div className="text-[15px] font-semibold text-foreground leading-snug">
+              Founding member rate — Growth plan for $49/month, locked forever
+            </div>
+            <div className="text-[13px] text-muted-foreground mt-0.5">
+              First {spotsTotal} customers only. Currently {spotsLeft} spots remaining.
+            </div>
+          </div>
+          <div className="sm:text-right shrink-0 sm:min-w-[160px]">
+            <div className="text-[12px] font-medium text-foreground mb-1.5">
+              {spotsTaken} / {spotsTotal} spots left
+            </div>
+            <div className="h-1.5 w-full sm:w-[160px] bg-white/70 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${(spotsTaken / spotsTotal) * 100}%`,
+                  backgroundColor: "#CD5A20",
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Billing toggle */}
+        <div className="mt-10 flex justify-center">
+          <div className="inline-flex items-center gap-1 bg-muted-bg rounded-lg p-1 border border-border">
+            {(["monthly", "yearly"] as const).map((b) => (
+              <button
+                key={b}
+                type="button"
+                onClick={() => setBilling(b)}
+                className={cn(
+                  "h-8 px-4 rounded-md text-[13px] font-medium transition-colors",
+                  billing === b
+                    ? "bg-surface text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {b === "monthly" ? "Monthly" : "Yearly"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Plan cards */}
+        <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+          {PLANS.map((plan, i) => {
+            const price = billing === "monthly" ? plan.monthly : plan.yearly;
+            return (
+              <div
+                key={plan.id}
+                className={cn(
+                  "relative flex flex-col rounded-xl bg-surface p-7 transition-all",
+                  plan.featured
+                    ? "border-2 shadow-lg md:-translate-y-2"
+                    : "border border-border hover-lift",
+                  inView && "animate-in-up",
+                )}
+                style={{
+                  borderColor: plan.featured ? "#CD5A20" : undefined,
+                  animationDelay: inView ? `${i * 100}ms` : undefined,
+                }}
+              >
+                {plan.featured && (
+                  <span
+                    className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full text-white"
+                    style={{ backgroundColor: "#CD5A20" }}
+                  >
+                    Most popular
+                  </span>
+                )}
+                <div className="label-tiny text-accent">{plan.name}</div>
+                <div className="mt-3 flex items-baseline gap-2 flex-wrap">
+                  <span className="font-serif text-[48px] leading-none text-foreground tracking-[-0.03em]">
+                    ${price}
+                  </span>
+                  <span className="text-[15px] text-muted-foreground">/mo</span>
+                  {billing === "yearly" && (
+                    <span
+                      className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                      style={{ backgroundColor: "hsl(var(--success-light))", color: "hsl(var(--success))" }}
+                    >
+                      Save 17%
+                    </span>
+                  )}
+                </div>
+                <div className="mt-1 text-[13px] text-muted-foreground">
+                  {billing === "yearly"
+                    ? `billed as $${plan.yearlyTotal.toLocaleString()}/year`
+                    : plan.subtitle}
+                </div>
+                <p className="mt-4 text-[13px] text-foreground/70 leading-relaxed min-h-[40px]">
+                  {plan.description}
+                </p>
+
+                <ul className="mt-5 space-y-2.5 flex-1">
+                  {plan.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2.5 text-[14px] text-foreground">
+                      <Check className="w-4 h-4 mt-0.5 text-accent shrink-0" strokeWidth={2.5} />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                  {plan.unavailable?.map((f) => (
+                    <li
+                      key={f}
+                      className="flex items-start gap-2.5 text-[14px] text-muted-foreground/60"
+                    >
+                      <span className="w-4 mt-0.5 shrink-0 text-center font-medium">—</span>
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="mt-6">
+                  <Button
+                    asChild
+                    variant={plan.ctaVariant}
+                    className="w-full h-11 text-[14px]"
+                  >
+                    <Link to="/login">Start free trial</Link>
+                  </Button>
+                  {plan.ctaSubline && (
+                    <p className="mt-2 text-center text-[11px] text-muted-foreground">
+                      {plan.ctaSubline}
+                    </p>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Guarantee */}
+        <p className="mt-10 text-center text-[13px] text-muted-foreground">
+          🔒 30-day money-back guarantee · No contracts · Cancel anytime
+        </p>
+
+        {/* Competitor comparison */}
+        <div className="mt-8 max-w-2xl mx-auto">
+          <button
+            type="button"
+            onClick={() => setCompareOpen((v) => !v)}
+            className="mx-auto flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground transition-colors"
+          >
+            How does ReviewReply compare?
+            <ChevronDown
+              size={14}
+              className={cn("transition-transform", compareOpen && "rotate-180")}
+            />
+          </button>
+          {compareOpen && (
+            <div className="mt-5 border border-border rounded-lg overflow-hidden bg-surface animate-in-fade">
+              <table className="w-full text-[13px]">
+                <thead>
+                  <tr className="bg-muted-bg text-muted-foreground">
+                    <th className="text-left px-4 py-2.5 font-medium">Tool</th>
+                    <th className="text-left px-4 py-2.5 font-medium">Price</th>
+                    <th className="text-left px-4 py-2.5 font-medium">Auto-reply</th>
+                    <th className="text-left px-4 py-2.5 font-medium">Multi-location</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { tool: "Birdeye", price: "$299/mo", auto: "✓", multi: "✓", us: false },
+                    { tool: "Podium", price: "$399/mo", auto: "✓", multi: "✓", us: false },
+                    { tool: "Grade.us", price: "$110/mo", auto: "✗", multi: "✓", us: false },
+                    { tool: "ReviewReply", price: "$69/mo", auto: "✓", multi: "✓", us: true },
+                  ].map((row) => (
+                    <tr
+                      key={row.tool}
+                      className="border-t border-border"
+                      style={row.us ? { backgroundColor: "#FEF2EC" } : undefined}
+                    >
+                      <td className={cn("px-4 py-2.5", row.us && "font-semibold text-foreground")}>
+                        {row.tool}
+                      </td>
+                      <td className="px-4 py-2.5 text-foreground/80">{row.price}</td>
+                      <td className="px-4 py-2.5 text-foreground/80">{row.auto}</td>
+                      <td className="px-4 py-2.5 text-foreground/80">{row.multi}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+};
+
 export default Index;
+

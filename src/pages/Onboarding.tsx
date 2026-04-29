@@ -438,16 +438,16 @@ const Step3 = ({
   <>
     <h1 className="font-serif text-[36px] leading-[1.05] mb-3 tracking-[-0.02em]">You're all set up.</h1>
     <p className="text-muted-foreground text-[15px] leading-relaxed mb-8">
-      Your 7-day free trial has started. No payment needed yet — we'll remind you before it ends.
+      Your 14-day free trial has started. No payment needed yet — we'll remind you before it ends.
     </p>
 
     <div className="bg-muted-bg rounded-lg p-5 mb-8">
       <div className="relative flex items-start justify-between">
         <div className="absolute top-2 left-2 right-2 h-px bg-border-strong" />
         {[
-          { label: "Today", sub: "Trial starts", active: true },
-          { label: "Day 7", sub: "Trial ends", active: false },
-          { label: "Day 8", sub: "First charge — $29", active: false },
+          { label: "Today", sub: "Trial starts (free, no card needed)", active: true },
+          { label: "Day 14", sub: "Trial ends", active: false },
+          { label: "Day 15", sub: "First charge (Growth — $69/mo)", active: false },
         ].map((item, i) => (
           <div key={i} className="relative flex flex-col items-center text-center" style={{ width: "33%" }}>
             <span
