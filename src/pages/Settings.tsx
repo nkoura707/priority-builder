@@ -58,6 +58,7 @@ const SettingsInner = () => {
   // Billing
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
+  const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
 
   // Tone
   const [tone, setTone] = useState<Tone>("professional");
@@ -78,7 +79,7 @@ const SettingsInner = () => {
       const [{ data: profile }, { data: locs }] = await Promise.all([
         supabase
           .from("profiles")
-          .select("full_name, subscription_status, trial_ends_at")
+          .select("full_name, subscription_status, trial_ends_at, subscription_id")
           .eq("id", user.id)
           .maybeSingle(),
         supabase
@@ -93,6 +94,7 @@ const SettingsInner = () => {
       setInitialFullName(name);
       setSubscriptionStatus(profile?.subscription_status ?? null);
       setTrialEndsAt(profile?.trial_ends_at ?? null);
+      setSubscriptionId(profile?.subscription_id ?? null);
 
       if (locs && locs.length > 0) {
         const first = locs[0];
@@ -242,7 +244,13 @@ const SettingsInner = () => {
               <div className="flex items-center justify-between gap-4 flex-wrap">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[15px] font-semibold">Growth — $29/month</span>
+                    <span className="text-[15px] font-semibold">{(() => {
+                      const id = subscriptionId ?? "";
+                      if (id.includes("starter")) return "Starter — $39/month";
+                      if (id.includes("growth")) return "Growth — $69/month";
+                      if (id.includes("agency")) return "Agency — $149/month";
+                      return "ReviewReply — Active subscription";
+                    })()}</span>
                     <StatusBadge status={subscriptionStatus} />
                   </div>
                   {subscriptionStatus === "trialing" && trialDateLabel && (
