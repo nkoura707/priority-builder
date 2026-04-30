@@ -3,6 +3,12 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/Logo";
 import { Star, Check, ArrowRight, ChevronDown } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 
 const Stars = ({ count = 5, size = 14 }: { count?: number; size?: number }) => (
@@ -17,14 +23,23 @@ const Stars = ({ count = 5, size = 14 }: { count?: number; size?: number }) => (
   </div>
 );
 
+const SmartDelayBadge = () => (
+  <span
+    className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
+    style={{ backgroundColor: "hsl(var(--accent-light))", color: "hsl(var(--accent))" }}
+  >
+    SmartDelay™
+  </span>
+);
+
 const ReviewPreviewCard = ({
   rating = 5,
-  name = "Sarah M.",
+  name = "Sandra L.",
   initialColor = "#FDE68A",
   initialText = "S",
   date = "3 days ago",
   text = "Best brunch in the neighborhood. The truffle pasta was incredible and our server Marco was so attentive. Already planning our next visit!",
-  reply = "Sarah, thank you so much for the kind words! Marco will be thrilled to hear this — the truffle pasta is one of his favorites to recommend. We can't wait to welcome you back. — The Team",
+  reply = "Sandra, thank you so much for the kind words! Marco will be thrilled to hear this — the truffle pasta is one of his favorites to recommend. We can't wait to welcome you back. — The Team",
   borderColor = "hsl(var(--success))",
   className = "",
   style,
@@ -59,6 +74,7 @@ const ReviewPreviewCard = ({
           </div>
           <div className="text-xs text-muted-foreground">{date}</div>
         </div>
+        <SmartDelayBadge />
       </div>
       <p className="mt-4 text-[15px] text-foreground/80 leading-[1.7]">{text}</p>
       <div className="mt-5 border-t border-dashed border-border" />
@@ -108,16 +124,27 @@ const useInView = <T extends HTMLElement>() => {
 };
 
 const HeroHeadline = () => {
-  const words = ["Every", "review", "deserves", "a", "reply.", "Now", "they", "all", "get", "one."];
+  const lines = [
+    ["Most", "businesses", "lose", "customers"],
+    ["before", "they", "ever", "walk", "in", "the", "door."],
+  ];
+  let idx = 0;
   return (
-    <h1 className="font-serif text-[44px] leading-[1.0] md:text-[72px] md:leading-[1.0] text-foreground tracking-[-0.03em]">
-      {words.map((w, i) => (
-        <span
-          key={i}
-          className="inline-block animate-in-up mr-[0.22em]"
-          style={{ animationDelay: `${i * 50}ms` }}
-        >
-          {w}
+    <h1 className="font-serif text-[40px] leading-[1.05] md:text-[64px] md:leading-[1.02] text-foreground tracking-[-0.03em]">
+      {lines.map((line, li) => (
+        <span key={li} className="block">
+          {line.map((w) => {
+            const i = idx++;
+            return (
+              <span
+                key={`${li}-${i}`}
+                className="inline-block animate-in-up mr-[0.22em]"
+                style={{ animationDelay: `${i * 50}ms` }}
+              >
+                {w}
+              </span>
+            );
+          })}
         </span>
       ))}
     </h1>
@@ -128,13 +155,24 @@ const Index = () => {
   const scrolled = useScrollPosition();
   const howRef = useInView<HTMLDivElement>();
   const pricingRef = useInView<HTMLDivElement>();
+  const spotsTaken = 31;
+  const spotsTotal = 50;
+  const spotsLeft = spotsTotal - spotsTaken;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {/* Top announcement bar */}
+      <div
+        className="fixed top-0 inset-x-0 z-50 text-center text-[13px] py-1.5 px-4"
+        style={{ backgroundColor: "#FEF2EC", color: "#92400E" }}
+      >
+        Founding rate ends at 50 businesses — Growth plan at $49/mo, locked for life · {spotsLeft} spots left
+      </div>
+
       {/* Navbar */}
       <header
         className={cn(
-          "fixed top-0 inset-x-0 z-40 transition-all duration-200 border-b",
+          "fixed top-[30px] inset-x-0 z-40 transition-all duration-200 border-b",
           scrolled
             ? "bg-surface/85 backdrop-blur-md border-border"
             : "bg-transparent border-transparent",
@@ -152,13 +190,13 @@ const Index = () => {
               Log in
             </Link>
             <Button asChild className="cta-shimmer">
-              <Link to="/login">Start free trial</Link>
+              <Link to="/login">Start free — 14 days</Link>
             </Button>
           </div>
         </nav>
       </header>
 
-      <main className="pt-16">
+      <main className="pt-[94px]">
         {/* Hero */}
         <section className="border-b border-border relative overflow-hidden">
           <div className="max-w-7xl mx-auto px-6 py-20 md:py-28 grid grid-cols-1 md:grid-cols-5 gap-12 items-center min-h-[80vh]">
@@ -170,51 +208,28 @@ const Index = () => {
                   <span className="absolute inline-flex h-full w-full rounded-full bg-success/60 pulse-dot" />
                   <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-success" />
                 </span>
-                Google Reviews · Automated
+                The #1 thing losing you customers on Google — and it takes 2 minutes to fix
               </span>
 
               <HeroHeadline />
 
               <p
-                className="mt-7 text-[19px] text-muted-foreground max-w-[480px] leading-[1.65] font-light animate-in-up"
+                className="mt-7 text-[19px] text-muted-foreground max-w-[540px] leading-[1.65] font-light animate-in-up"
                 style={{ animationDelay: "550ms" }}
               >
-                ReviewReply writes personalized responses to your Google reviews and posts them for you. Set it up in 5
-                minutes. Never ignore a review again.
+                Every day, people search for a business like yours on Google. They read your reviews. Then they look to see if you respond to them. If you don't — most of them choose someone who does. ReviewReply makes sure there's always a reply, without you spending a minute on it.
               </p>
 
               <div className="mt-10 animate-in-up" style={{ animationDelay: "650ms" }}>
                 <Button asChild size="lg" className="group h-12 px-8 text-[15px]">
                   <Link to="/login">
-                    Start free — 14 days
+                    See how it works — free for 14 days
                     <ArrowRight size={16} className="arrow-nudge" />
                   </Link>
                 </Button>
-                <div className="mt-3 text-[13px] text-muted-foreground">No credit card required</div>
-              </div>
-
-              <div
-                className="mt-10 flex items-center gap-3 animate-in-up"
-                style={{ animationDelay: "750ms" }}
-              >
-                <div className="flex -space-x-2">
-                  {[
-                    { bg: "#FDE68A", t: "M" },
-                    { bg: "#BBF7D0", t: "S" },
-                    { bg: "#BFDBFE", t: "K" },
-                  ].map((a) => (
-                    <div
-                      key={a.t}
-                      className="h-7 w-7 rounded-full border-2 border-background flex items-center justify-center text-[11px] font-semibold"
-                      style={{ backgroundColor: a.bg, color: "#7c5a00" }}
-                    >
-                      {a.t}
-                    </div>
-                  ))}
+                <div className="mt-3 text-[13px] text-muted-foreground">
+                  No credit card · No contracts · Takes 4 minutes to set up
                 </div>
-                <span className="text-[13px] text-muted-foreground">
-                  Trusted by 500+ local businesses
-                </span>
               </div>
             </div>
 
@@ -239,73 +254,170 @@ const Index = () => {
                 style={{ animationDelay: "450ms", transform: "rotate(1deg)" }}
               >
                 <ReviewPreviewCard
-                  rating={1}
-                  name="James K."
+                  rating={2}
+                  name="Tom B."
                   initialColor="#FECACA"
-                  initialText="J"
+                  initialText="T"
                   date="yesterday"
                   borderColor="hsl(var(--danger))"
                   text="Waited 40 minutes for a table we had reserved. Food was fine but the experience left a bad taste."
-                  reply="James, I'm really sorry we kept you waiting — that's not the experience we want for anyone. I'd love to make it right. Could you email me directly? — Marco, Owner"
+                  reply="Tom, I'm really sorry we kept you waiting — that's not the experience we want for anyone. I'd love to make it right. Could you email me directly? — Marco, Owner"
                 />
               </div>
             </div>
           </div>
         </section>
 
-        {/* Proof bar */}
-        <section className="bg-muted-bg border-b border-border">
-          <div className="max-w-7xl mx-auto px-6 py-14 flex flex-col md:flex-row items-center justify-center gap-10 md:gap-20 text-center">
-            <div className="text-[15px] text-muted-foreground md:max-w-[200px] md:text-left">
-              Helping local businesses reply faster
+        {/* Section 1 — The Revelation */}
+        <section className="border-b border-border bg-surface">
+          <div className="max-w-3xl mx-auto px-6 py-24 md:py-32">
+            <p className="font-serif text-[28px] md:text-[36px] text-foreground tracking-[-0.02em] leading-[1.2] text-center italic">
+              "What happens when a customer leaves you a review and you don't reply?"
+            </p>
+            <div className="mt-12 space-y-6 text-[17px] text-foreground/80 leading-[1.75]">
+              <p>
+                Most business owners assume the answer is: nothing. The review sits there, people read it, life goes on.
+              </p>
+              <p>
+                But here's what actually happens. When a potential customer finds your business on Google, they don't just read the reviews — they scroll down to see how you responded to them. A business with 4.6 stars and thoughtful replies to every review looks fundamentally different from a business with the same 4.6 stars and silence. One looks like a business that cares about its customers. The other looks like no one's home.
+              </p>
+              <p>
+                That gap — between replying and not replying — is costing real businesses real revenue. Quietly. Every week.
+              </p>
             </div>
-            {[
-              { n: "12,000+", l: "reviews replied to" },
-              { n: "4.9 / 5", l: "average owner rating" },
-              { n: "< 2 min", l: "average setup time" },
-            ].map((s) => (
-              <div key={s.l}>
-                <div className="font-serif text-[36px] leading-none text-foreground tracking-[-0.02em]">
-                  {s.n}
-                </div>
-                <div className="mt-2 text-[13px] text-muted-foreground">{s.l}</div>
-              </div>
-            ))}
           </div>
         </section>
 
-        {/* How it works — horizontal stepper */}
+        {/* Section 2 — The Numbers */}
+        <section className="border-b border-border bg-muted-bg">
+          <div className="max-w-6xl mx-auto px-6 py-24 md:py-32">
+            <div className="label-tiny text-accent mb-3">What the research actually shows</div>
+            <h2 className="font-serif text-[36px] md:text-[44px] text-foreground tracking-[-0.02em] leading-[1.05] max-w-[680px] mb-12">
+              The numbers behind unanswered reviews.
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {[
+                {
+                  stat: "18% more revenue",
+                  body: "Businesses that consistently respond to all their Google reviews — positive and negative — earn an average of 18% more revenue than those that don't. This isn't a marginal difference. It compounds over months.",
+                  source: "Harvard Business School / LocaliQ",
+                },
+                {
+                  stat: "97% of people read your responses",
+                  body: "Nearly every person who reads a review on your Google profile also reads the business's reply — if there is one. A well-written response to a 1-star review can actually bring in new customers who were impressed by how you handled it.",
+                  source: "ReviewTrackers, 2026",
+                },
+                {
+                  stat: "A 1-star increase = 5–9% revenue growth",
+                  body: "For every half-star improvement in your overall Google rating — driven partly by how actively you engage with reviewers — a business can see a 5 to 9% increase in revenue. For a business doing $500K a year, that's $25,000–$45,000.",
+                  source: "Harvard Business School",
+                },
+                {
+                  stat: "53% expect a reply within one week",
+                  body: "More than half of customers who leave a negative review expect a response within seven days. Most businesses take weeks. Or never respond. The ones that reply fast build a reputation for actually caring — which shows up in their star rating over time.",
+                  source: "BrightLocal, 2025",
+                },
+              ].map((card) => (
+                <div key={card.stat} className="bg-surface border border-border rounded-xl p-7 hover-lift">
+                  <div className="font-serif text-[24px] md:text-[26px] text-foreground tracking-[-0.02em] leading-[1.15]">
+                    {card.stat}
+                  </div>
+                  <p className="mt-4 text-[14px] text-muted-foreground leading-[1.7]">{card.body}</p>
+                  <p className="mt-4 text-[12px] italic text-foreground/50">Source: {card.source}</p>
+                </div>
+              ))}
+            </div>
+
+            <p className="mt-14 text-center text-[16px] italic text-foreground/70 max-w-[640px] mx-auto leading-[1.7]">
+              None of this requires better service, lower prices, or more advertising. It just requires showing up in the conversation your customers are already having about you.
+            </p>
+          </div>
+        </section>
+
+        {/* Section 3 — The Problem in Plain Terms */}
+        <section className="border-b border-border bg-surface">
+          <div className="max-w-3xl mx-auto px-6 py-24 md:py-32">
+            <h2 className="font-serif text-[32px] md:text-[40px] text-foreground tracking-[-0.02em] leading-[1.15]">
+              The problem isn't that owners don't care. It's that replying to reviews is genuinely hard to keep up with.
+            </h2>
+            <div className="mt-10 space-y-6 text-[16px] text-foreground/80 leading-[1.75]">
+              <p>
+                A new review comes in. You mean to reply. Something else needs your attention first. By the time you circle back, three more reviews have arrived, you don't know where to start, and the task feels bigger than it is. So it waits. And waits.
+              </p>
+              <p>
+                Even owners who do reply face a different problem: knowing what to say. A 5-star review is easy. A 3-star review with a vague complaint about "the atmosphere" is harder. A 1-star review from a customer who you know had an unreasonable experience — that one can take 20 minutes to write and still feel wrong.
+              </p>
+              <p>
+                What most businesses need isn't motivation. It's a system that handles this without them having to think about it.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 4 — Solution */}
+        <section className="border-b border-border bg-muted-bg">
+          <div className="max-w-3xl mx-auto px-6 py-24 md:py-32">
+            <div className="label-tiny text-accent mb-3">What ReviewReply does</div>
+            <h2 className="font-serif text-[32px] md:text-[44px] text-foreground tracking-[-0.02em] leading-[1.1]">
+              Every review gets a reply. You set it up once.
+            </h2>
+            <div className="mt-8 space-y-6 text-[16px] text-foreground/80 leading-[1.75]">
+              <p>
+                ReviewReply connects to your Google Business Profile and watches for new reviews as they come in. For each one, it reads the actual content of what the customer wrote — the specific complaint, the specific compliment, the specific detail — and writes a reply that addresses it directly.
+              </p>
+              <p>
+                Not a template. Not "Thank you for your review, we appreciate your feedback." A reply that reads like a person who actually read what the customer said and took it seriously.
+              </p>
+              <p>Then — and this is important — it waits.</p>
+            </div>
+
+            {/* Callout box */}
+            <div
+              className="mt-10 rounded-xl p-6 md:p-7"
+              style={{ backgroundColor: "#FEF2EC", border: "1px solid #F5C4A0" }}
+            >
+              <div className="text-[14px] font-semibold text-foreground mb-2">Why the wait matters:</div>
+              <p className="text-[15px] text-foreground/80 leading-[1.7]">
+                Automated review tools that post instantly are increasingly recognized as bots. 46% of consumers say they can identify an AI-generated response by how fast it appears. ReviewReply holds every reply for 2–6 hours and posts during normal business hours — so every response looks like it came from a person who took a moment to think about it. We call this SmartDelay™. No competitor at our price point has it.
+              </p>
+            </div>
+
+            <p className="mt-8 text-[16px] text-foreground/80 leading-[1.75]">
+              After the wait, the reply posts to Google automatically. If you want to review or edit the draft before it goes out, it's in your dashboard. You have the final say on everything.
+            </p>
+          </div>
+        </section>
+
+        {/* Section 5 — How it works */}
         <section ref={howRef.ref} className="border-b border-border">
           <div className="max-w-6xl mx-auto px-6 py-24 md:py-32">
-            <div className="label-tiny text-accent mb-3">How it works</div>
-            <h2 className="font-serif text-[40px] md:text-[48px] text-foreground tracking-[-0.02em] leading-[1.05] max-w-[640px]">
-              From connect to first reply in under five minutes.
+            <div className="label-tiny text-accent mb-3">Four minutes to set up. Then it runs itself.</div>
+            <h2 className="font-serif text-[36px] md:text-[44px] text-foreground tracking-[-0.02em] leading-[1.05] max-w-[640px]">
+              How ReviewReply works.
             </h2>
 
             <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-6 relative">
               {[
                 {
                   n: "01",
-                  t: "Connect your Google Business",
-                  d: "Authorize once with your Google account. We sync all your reviews immediately.",
+                  t: "Connect your Google Business Profile",
+                  d: "One-time authorization. ReviewReply syncs with your profile and starts pulling in reviews immediately.",
                 },
                 {
                   n: "02",
-                  t: "AI drafts every reply",
-                  d: "Each review gets a personalized response that matches your business's tone. No templates.",
+                  t: "AI reads and writes",
+                  d: "Each review gets a unique reply written around what the customer actually said. Positive reviews get genuine gratitude. Negative reviews get a calm, professional response that acknowledges the issue and invites resolution. Rating-only reviews get a short, appropriate acknowledgment.",
                 },
                 {
                   n: "03",
-                  t: "One click to publish",
-                  d: "Review the draft, make edits, and post directly to Google without leaving your dashboard.",
+                  t: "SmartDelay™ posts at the right time",
+                  d: "Your reply goes into a queue. ReviewReply posts it 2–6 hours later, during business hours, so it lands naturally. Your dashboard shows every reply before and after it posts — you're always in the loop.",
                 },
               ].map((s, i) => (
                 <div
                   key={s.n}
-                  className={cn(
-                    "relative",
-                    howRef.inView && "animate-in-up",
-                  )}
+                  className={cn("relative", howRef.inView && "animate-in-up")}
                   style={howRef.inView ? { animationDelay: `${i * 120}ms` } : { opacity: 0 }}
                 >
                   {i < 2 && (
@@ -318,118 +430,207 @@ const Index = () => {
                     {s.n}
                   </div>
                   <h3 className="mt-5 text-[16px] font-semibold text-foreground">{s.t}</h3>
-                  <p className="mt-2 text-[14px] text-muted-foreground leading-[1.65] max-w-[300px]">
-                    {s.d}
-                  </p>
+                  <p className="mt-2 text-[14px] text-muted-foreground leading-[1.65] max-w-[320px]">{s.d}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-14">
+              <Button asChild size="lg" className="h-12 px-8 text-[15px]">
+                <Link to="/login">
+                  Start free for 14 days — no card needed
+                  <ArrowRight size={16} className="arrow-nudge ml-1" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 6 — Review Generation */}
+        <section className="border-b border-border bg-surface">
+          <div className="max-w-3xl mx-auto px-6 py-24 md:py-32">
+            <div className="label-tiny text-accent mb-3">The other half of a strong review profile</div>
+            <h2 className="font-serif text-[32px] md:text-[44px] text-foreground tracking-[-0.02em] leading-[1.1]">
+              More good reviews — without asking your customers in person.
+            </h2>
+            <div className="mt-8 space-y-6 text-[16px] text-foreground/80 leading-[1.75]">
+              <p>
+                Responding to reviews improves your reputation with the customers you already have. Generating new ones builds your profile for customers you haven't met yet.
+              </p>
+              <p>
+                With ReviewReply's review generation feature, you can send a simple one-tap review request to any customer — by SMS or email. They receive a message, tap a link, land directly on your Google review page, and leave a review in under 30 seconds. No app to download. No account to create. No friction.
+              </p>
+              <div
+                className="rounded-xl p-6 mt-2"
+                style={{ backgroundColor: "#FEF2EC", border: "1px solid #F5C4A0" }}
+              >
+                <div className="text-[14px] font-semibold text-foreground mb-2">Why this matters:</div>
+                <p className="text-[15px] text-foreground/80 leading-[1.7]">
+                  Businesses with 200 or more Google reviews earn twice the revenue of businesses with fewer reviews — on average. Not because their service is twice as good. Because their reputation is twice as visible. The businesses dominating local search in your area aren't just better than you. They have a system for collecting reviews consistently. Now you do too.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 7 — Features grid */}
+        <section className="border-b border-border bg-muted-bg">
+          <div className="max-w-6xl mx-auto px-6 py-24 md:py-32">
+            <div className="label-tiny text-accent mb-3">What you get</div>
+            <h2 className="font-serif text-[36px] md:text-[44px] text-foreground tracking-[-0.02em] leading-[1.05] max-w-[680px] mb-12">
+              Everything you need. Nothing you don't.
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {[
+                {
+                  label: "Negative reviews handled right",
+                  body: "1-star reviews are the ones that matter most — to potential customers reading them and to your overall rating. ReviewReply is specifically trained to write calm, non-defensive responses that acknowledge what went wrong and invite the customer to return. No templates. No corporate non-answers.",
+                },
+                {
+                  label: "Your tone, consistently",
+                  body: "Choose professional, friendly, or formal. Your replies stay consistent with your brand voice across every review, every location, every time — without you having to rewrite anything.",
+                },
+                {
+                  label: "All your locations, one place",
+                  body: "Whether you have one location or ten, every review inbox is managed from a single dashboard. Each location can have its own tone and auto-reply settings. New locations added any time.",
+                },
+                {
+                  label: "Always in control",
+                  body: "Every reply is a draft first. Edit it, rewrite it, or skip it entirely before SmartDelay posts it. Most owners stop checking after the first few weeks because the quality holds up — but the control is always there.",
+                },
+              ].map((cell) => (
+                <div key={cell.label} className="bg-surface border border-border rounded-xl p-7 hover-lift">
+                  <div className="label-tiny text-accent mb-3">{cell.label}</div>
+                  <p className="text-[15px] text-foreground/80 leading-[1.7]">{cell.body}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Features — bento grid */}
-        <section className="border-b border-border bg-muted-bg">
-          <div className="max-w-6xl mx-auto px-6 py-24 md:py-32">
-            <div className="label-tiny text-accent mb-3">What you get</div>
-            <h2 className="font-serif text-[40px] md:text-[48px] text-foreground tracking-[-0.02em] leading-[1.05] max-w-[680px] mb-14">
-              Built specifically for the way local businesses work.
-            </h2>
+        {/* Section 8 — Social Proof */}
+        <section className="border-b border-border bg-surface">
+          <div className="max-w-4xl mx-auto px-6 py-24 md:py-32">
+            <blockquote className="font-serif text-[26px] md:text-[34px] text-foreground tracking-[-0.02em] leading-[1.3] text-center italic">
+              "I genuinely didn't know that not replying to reviews was costing me customers. I thought it was just good practice. Turns out it's a revenue issue. ReviewReply fixed it in one afternoon."
+            </blockquote>
+            <div className="mt-6 text-center text-[13px] text-muted-foreground">
+              — Owner, Restaurant · Austin, TX
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {/* Feature 1 — full width */}
-              <div className="md:col-span-2 bg-surface border border-border rounded-xl p-8 md:p-10 hover-lift">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-                  <div>
-                    <div className="label-tiny text-accent mb-3">Personalized</div>
-                    <h3 className="font-serif text-[28px] md:text-[34px] tracking-[-0.02em] text-foreground leading-[1.1]">
-                      Replies that actually sound human.
-                    </h3>
-                    <p className="mt-4 text-[15px] text-muted-foreground leading-[1.65] max-w-[440px]">
-                      The AI reads the actual content of each review — not just the star rating. A reviewer who mentions
-                      the pasta gets a reply about the pasta.
-                    </p>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="bg-muted-bg rounded-lg border border-border p-4">
-                      <div className="text-[11px] uppercase tracking-wider text-danger mb-2 font-medium">Generic</div>
-                      <p className="text-[14px] text-muted-foreground line-through">
-                        Thank you for your feedback! We appreciate your business.
-                      </p>
-                    </div>
-                    <div
-                      className="bg-surface rounded-lg p-4"
-                      style={{ border: "1.5px solid hsl(var(--success))" }}
-                    >
-                      <div className="text-[11px] uppercase tracking-wider text-success mb-2 font-medium">Specific</div>
-                      <p className="text-[14px] text-foreground leading-relaxed">
-                        Sarah, so glad Marco took good care of you — and that the truffle pasta lived up to the hype.
-                        We'll save you a table for next time.
-                      </p>
-                    </div>
-                  </div>
+            <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[
+                {
+                  q: "The replies don't sound like a robot wrote them. A regular customer actually commented that she appreciated how I'd responded to a bad review — she thought I'd written it myself.",
+                  a: "Owner, Hair Salon",
+                },
+                {
+                  q: "I manage three locations. Before this, reviews just piled up. Now it's one less thing I have to worry about, and all three profiles look active and engaged.",
+                  a: "Operator, Multi-location Café",
+                },
+              ].map((t) => (
+                <div key={t.a} className="bg-muted-bg border border-border rounded-xl p-6">
+                  <p className="text-[15px] text-foreground/80 leading-[1.7] italic">"{t.q}"</p>
+                  <div className="mt-4 text-[12px] text-muted-foreground">— {t.a}</div>
                 </div>
-              </div>
+              ))}
+            </div>
 
-              {/* Feature 2 */}
-              <div className="bg-surface border border-border rounded-xl p-8 hover-lift">
-                <div className="label-tiny text-accent mb-3">Hard reviews handled</div>
-                <h3 className="font-serif text-[26px] md:text-[28px] tracking-[-0.02em] text-foreground leading-[1.1]">
-                  Built for 1-star reviews too.
-                </h3>
-                <p className="mt-4 text-[15px] text-muted-foreground leading-[1.65]">
-                  Negative reviews need the most attention and get the least. ReviewReply drafts calm, professional
-                  responses that de-escalate and invite the customer to return.
-                </p>
-                <div className="mt-6 bg-muted-bg rounded-lg border border-border p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Stars count={1} size={13} />
-                    <span className="text-[12px] text-muted-foreground">James K. · yesterday</span>
-                  </div>
-                  <p className="text-[13px] text-foreground/80 italic leading-relaxed">
-                    "Waited 40 minutes for a table we had reserved…"
-                  </p>
+            <div className="mt-14 flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12 text-center">
+              {[
+                { n: "12,000+", l: "reviews replied to" },
+                { n: "4.9 / 5", l: "from owners" },
+                { n: "12+", l: "business categories" },
+              ].map((s) => (
+                <div key={s.l}>
+                  <div className="font-serif text-[32px] leading-none text-foreground tracking-[-0.02em]">{s.n}</div>
+                  <div className="mt-2 text-[13px] text-muted-foreground">{s.l}</div>
                 </div>
-              </div>
-
-              {/* Feature 3 */}
-              <div className="bg-surface border border-border rounded-xl p-8 hover-lift">
-                <div className="label-tiny text-accent mb-3">Multi-location</div>
-                <h3 className="font-serif text-[26px] md:text-[28px] tracking-[-0.02em] text-foreground leading-[1.1]">
-                  All your locations, one inbox.
-                </h3>
-                <p className="mt-4 text-[15px] text-muted-foreground leading-[1.65]">
-                  Own a restaurant group or a small chain? Connect every location and manage all reviews from a single
-                  dashboard.
-                </p>
-                <div className="mt-6 space-y-2">
-                  {[
-                    { name: "Osteria Marco — Downtown", count: "12 pending", color: "#FDE68A" },
-                    { name: "Osteria Marco — Riverside", count: "4 pending", color: "#BBF7D0" },
-                  ].map((loc) => (
-                    <div
-                      key={loc.name}
-                      className="bg-muted-bg rounded-lg border border-border p-3 flex items-center gap-3"
-                    >
-                      <div
-                        className="w-8 h-8 rounded-md flex items-center justify-center font-semibold text-xs"
-                        style={{ backgroundColor: loc.color, color: "#7c5a00" }}
-                      >
-                        O
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[13px] font-semibold text-foreground truncate">{loc.name}</div>
-                        <div className="text-[11px] text-muted-foreground">{loc.count}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </section>
 
         {/* Pricing */}
         <PricingSection inView={pricingRef.inView} sectionRef={pricingRef.ref} />
+
+        {/* Section 10 — FAQ */}
+        <section className="border-b border-border bg-surface">
+          <div className="max-w-3xl mx-auto px-6 py-24 md:py-32">
+            <h2 className="font-serif text-[36px] md:text-[44px] text-foreground tracking-[-0.02em] leading-[1.05] mb-10">
+              Questions worth answering properly.
+            </h2>
+            <Accordion type="single" collapsible className="w-full">
+              {[
+                {
+                  q: "I didn't know not responding to reviews was a real problem — how much does it actually matter?",
+                  a: "More than most owners realize. Research from Harvard Business School shows that businesses with consistent review responses earn 18% more revenue on average. 97% of people who read a review also read the business's responses — if there are any. And when there aren't, they notice. It's not that unanswered reviews hurt your rating directly — it's that they signal to potential customers that no one is paying attention. ReviewReply fixes that signal without you having to do anything.",
+                },
+                {
+                  q: "Will the replies actually sound like they came from me — or will customers know it's automated?",
+                  a: "Two things prevent the \"obviously automated\" feeling. First, the AI reads each review individually and responds to what the customer actually wrote — not a generic template. Second, SmartDelay™ holds every reply for 2–6 hours before posting, during business hours. Replies that post instantly at 2:47am read like a bot. Replies that post at 10:30am on a Tuesday read like a person. Most customers won't know. Some of yours will mention that they appreciated your response — because it sounds like you meant it.",
+                },
+                {
+                  q: "What happens if I disagree with what the AI wrote?",
+                  a: "Every reply is a draft in your dashboard before it posts. You can edit the wording, change the tone entirely, or delete the reply and write your own. The draft sits there during the SmartDelay window — you have time to review it before anything goes live. You're never locked out of the process.",
+                },
+                {
+                  q: "Does this work for businesses that get a lot of reviews — or only a few?",
+                  a: "Both. If you get 200 reviews a month, the automation handles all of them without you spending hours you don't have. If you get 10 reviews a month, each one still gets the same quality reply it would if you'd written it yourself — just without the time investment. The value scales with your review volume.",
+                },
+                {
+                  q: "What if I want to cancel?",
+                  a: "Settings → Billing → Cancel subscription. No phone call. No retention screen. No 90-day notice window. If you cancel, your subscription ends at the end of the current billing period. Your data is yours. We'd rather earn your subscription every month than trap you in one.",
+                },
+                {
+                  q: "How is this different from just using ChatGPT to write replies?",
+                  a: "ChatGPT requires you to: notice a new review, copy the text, open ChatGPT, write a prompt explaining your business and tone, generate the reply, read it, copy it, go back to Google, find the review, paste the reply, and hit publish — every single time, for every single review, indefinitely. ReviewReply does all of that automatically, posts during business hours so it looks human, and sends review requests to new customers so your profile keeps growing. It's not a tool you use. It's a system that works while you're not thinking about it.",
+                },
+              ].map((item, i) => (
+                <AccordionItem key={i} value={`item-${i}`} className="border-border">
+                  <AccordionTrigger className="text-left text-[16px] font-semibold text-foreground hover:no-underline py-5">
+                    {item.q}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-[15px] text-foreground/75 leading-[1.75] pb-5">
+                    {item.a}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </section>
+
+        {/* Final CTA */}
+        <section className="border-b border-border bg-muted-bg">
+          <div className="max-w-3xl mx-auto px-6 py-24 md:py-32 text-center">
+            <h2 className="font-serif text-[34px] md:text-[48px] text-foreground tracking-[-0.02em] leading-[1.1]">
+              The businesses winning on Google aren't doing more work than you.
+              <span className="block mt-2">They just have a better system.</span>
+            </h2>
+            <div className="mt-10 space-y-5 text-[16px] text-foreground/80 leading-[1.75] text-left max-w-[640px] mx-auto">
+              <p>
+                Every search someone does for a business like yours ends at a Google profile. They read the reviews. They look for replies. They make a decision — usually in under two minutes — based on what they find.
+              </p>
+              <p>ReviewReply makes sure that what they find looks like a business that pays attention.</p>
+              <p>Set it up in 4 minutes today. Your first reply generates automatically.</p>
+            </div>
+            <div className="mt-10">
+              <Button asChild size="lg" className="h-12 px-8 text-[15px]">
+                <Link to="/login">
+                  Start free — 14 days, no card needed
+                  <ArrowRight size={16} className="arrow-nudge ml-1" />
+                </Link>
+              </Button>
+              <div className="mt-3 text-[13px] text-muted-foreground">
+                No credit card required to start. Cancel any time.
+              </div>
+              <div className="mt-6 inline-block text-[13px] font-medium px-3 py-1.5 rounded-full" style={{ backgroundColor: "#FEF2EC", color: "#92400E" }}>
+                Founding rate: {spotsLeft} of {spotsTotal} spots remaining — $49/month, locked for life
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
       {/* Footer */}
@@ -438,7 +639,7 @@ const Index = () => {
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8">
             <div>
               <Logo variant="light" size={20} />
-              <p className="mt-4 text-[14px] text-white/60 max-w-[260px]">Replies that sound like you.</p>
+              <p className="mt-4 text-[14px] text-white/60 max-w-[260px]">Your reputation, always on.</p>
             </div>
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[14px] text-white/70">
               <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
@@ -463,6 +664,7 @@ type Plan = {
   id: "starter" | "growth" | "agency";
   name: string;
   monthly: number;
+  originalMonthly?: number;
   yearly: number;
   yearlyTotal: number;
   subtitle: string;
@@ -470,8 +672,10 @@ type Plan = {
   features: string[];
   unavailable?: string[];
   featured?: boolean;
+  ctaLabel: string;
   ctaVariant: "default" | "outline";
   ctaSubline?: string;
+  badge?: string;
 };
 
 const PLANS: Plan[] = [
@@ -481,37 +685,41 @@ const PLANS: Plan[] = [
     monthly: 39,
     yearly: 32,
     yearlyTotal: 384,
-    subtitle: "1 location · billed monthly",
-    description: "For single-location owners who want to stay on top of reviews.",
+    subtitle: "1 location · month to month",
+    description: "For owners who want the AI to draft replies, with manual approval before posting.",
     features: [
       "Unlimited AI-generated replies",
-      "Manual add + publish workflow",
-      "3 tone presets (professional, friendly, formal)",
-      "Review inbox dashboard",
-      "14-day free trial",
+      "Review inbox — you approve before posting",
+      "3 tone presets",
+      "14-day free trial — no card needed",
     ],
-    unavailable: ["Auto-reply scheduling", "Multiple locations"],
+    unavailable: ["SmartDelay auto-posting", "Review generation", "Multiple locations"],
+    ctaLabel: "Start free →",
     ctaVariant: "outline",
   },
   {
     id: "growth",
     name: "Growth",
-    monthly: 69,
-    yearly: 57,
-    yearlyTotal: 684,
-    subtitle: "Up to 3 locations · billed monthly",
-    description: "For busy owners who want replies to go out automatically.",
+    monthly: 49,
+    originalMonthly: 69,
+    yearly: 41,
+    yearlyTotal: 492,
+    subtitle: "Up to 3 locations · month to month",
+    description: "The fully automated option. Set it up and let it run.",
     features: [
       "Everything in Starter",
-      "Auto-reply scheduling (2–6hr delay)",
-      "Reply scope filter (all / 4★+ / 5★ only)",
+      "SmartDelay™ — posts at human timing, no input needed",
+      "Review generation — request reviews via SMS and email",
       "Up to 3 locations",
-      "Hourly automatic review sync",
-      "Priority AI generation",
+      "Auto-reply scope: all reviews / 4★+ only / 5★ only",
+      "Hourly review sync",
+      "14-day free trial — no card needed",
     ],
     featured: true,
+    ctaLabel: "Start free — founding rate →",
     ctaVariant: "default",
-    ctaSubline: "Most chosen by dental clinics & med spas",
+    ctaSubline: "The founding rate locks the moment you subscribe. It doesn't change.",
+    badge: "31 founding spots left",
   },
   {
     id: "agency",
@@ -519,15 +727,16 @@ const PLANS: Plan[] = [
     monthly: 149,
     yearly: 124,
     yearlyTotal: 1488,
-    subtitle: "Unlimited locations · billed monthly",
-    description: "For agencies and groups managing multiple business profiles.",
+    subtitle: "Unlimited locations · month to month",
+    description: "For agencies and groups managing multiple Google Business Profiles.",
     features: [
       "Everything in Growth",
       "Unlimited locations",
-      "Per-location tone settings",
+      "Per-location tone and auto-reply settings",
       "Priority support",
-      "Dedicated onboarding call",
+      "Onboarding call included",
     ],
+    ctaLabel: "Start free →",
     ctaVariant: "outline",
   },
 ];
@@ -551,32 +760,29 @@ const PricingSection = ({
         <div className="text-center">
           <div className="label-tiny text-accent mb-3">Pricing</div>
           <h2 className="font-serif text-[40px] md:text-[48px] text-foreground tracking-[-0.02em] leading-[1.05]">
-            Simple pricing.
+            Clear pricing. No contracts. No surprises.
           </h2>
-          <p className="mt-3 text-muted-foreground text-[15px]">
-            Pick the plan that fits. Upgrade or cancel anytime.
-          </p>
         </div>
 
         {/* Founding member banner */}
         <div
-          className="mt-10 mx-auto max-w-3xl rounded-[10px] px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+          className="mt-10 mx-auto max-w-3xl rounded-[10px] px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
           style={{ backgroundColor: "#FEF2EC", border: "1px solid #F5C4A0" }}
         >
           <div>
             <span className="inline-block text-[10px] font-semibold uppercase tracking-wider text-accent mb-1">
-              Limited offer
+              Founding member rate — still available
             </span>
             <div className="text-[15px] font-semibold text-foreground leading-snug">
-              Founding member rate — Growth plan for $49/month, locked forever
+              Growth plan at $49/month — permanently
             </div>
-            <div className="text-[13px] text-muted-foreground mt-0.5">
-              First {spotsTotal} customers only. Currently {spotsLeft} spots remaining.
+            <div className="text-[13px] text-muted-foreground mt-1 max-w-[440px]">
+              The first {spotsTotal} businesses to join ReviewReply lock in this rate forever — regardless of future pricing changes or feature additions. {spotsLeft} of those spots are still available.
             </div>
           </div>
           <div className="sm:text-right shrink-0 sm:min-w-[160px]">
             <div className="text-[12px] font-medium text-foreground mb-1.5">
-              {spotsTaken} / {spotsTotal} spots left
+              {spotsLeft} of {spotsTotal} spots remaining
             </div>
             <div className="h-1.5 w-full sm:w-[160px] bg-white/70 rounded-full overflow-hidden">
               <div
@@ -605,7 +811,7 @@ const PricingSection = ({
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                {b === "monthly" ? "Monthly" : "Yearly"}
+                {b === "monthly" ? "Monthly" : "Yearly — save 17%"}
               </button>
             ))}
           </div>
@@ -632,14 +838,26 @@ const PricingSection = ({
               >
                 {plan.featured && (
                   <span
-                    className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full text-white"
+                    className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full text-white whitespace-nowrap"
                     style={{ backgroundColor: "#CD5A20" }}
                   >
                     Most popular
                   </span>
                 )}
-                <div className="label-tiny text-accent">{plan.name}</div>
+                <div className="flex items-center justify-between">
+                  <div className="label-tiny text-accent">{plan.name}</div>
+                  {plan.badge && (
+                    <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ backgroundColor: "hsl(var(--accent-light))", color: "hsl(var(--accent))" }}>
+                      {plan.badge}
+                    </span>
+                  )}
+                </div>
                 <div className="mt-3 flex items-baseline gap-2 flex-wrap">
+                  {plan.originalMonthly && billing === "monthly" && (
+                    <span className="font-serif text-[24px] leading-none text-muted-foreground/60 line-through">
+                      ${plan.originalMonthly}
+                    </span>
+                  )}
                   <span className="font-serif text-[48px] leading-none text-foreground tracking-[-0.03em]">
                     ${price}
                   </span>
@@ -670,10 +888,7 @@ const PricingSection = ({
                     </li>
                   ))}
                   {plan.unavailable?.map((f) => (
-                    <li
-                      key={f}
-                      className="flex items-start gap-2.5 text-[14px] text-muted-foreground/60"
-                    >
+                    <li key={f} className="flex items-start gap-2.5 text-[14px] text-muted-foreground/60">
                       <span className="w-4 mt-0.5 shrink-0 text-center font-medium">—</span>
                       <span>{f}</span>
                     </li>
@@ -681,15 +896,11 @@ const PricingSection = ({
                 </ul>
 
                 <div className="mt-6">
-                  <Button
-                    asChild
-                    variant={plan.ctaVariant}
-                    className="w-full h-11 text-[14px]"
-                  >
-                    <Link to="/login">Start free trial</Link>
+                  <Button asChild variant={plan.ctaVariant} className="w-full h-11 text-[14px]">
+                    <Link to="/login">{plan.ctaLabel}</Link>
                   </Button>
                   {plan.ctaSubline && (
-                    <p className="mt-2 text-center text-[11px] text-muted-foreground">
+                    <p className="mt-2 text-center text-[11px] italic text-muted-foreground leading-snug">
                       {plan.ctaSubline}
                     </p>
                   )}
@@ -699,57 +910,60 @@ const PricingSection = ({
           })}
         </div>
 
-        {/* Guarantee */}
-        <p className="mt-10 text-center text-[13px] text-muted-foreground">
-          🔒 30-day money-back guarantee · No contracts · Cancel anytime
-        </p>
+        {/* Annual + guarantee */}
+        <div className="mt-10 text-center space-y-2 text-[13px] text-muted-foreground">
+          <p>
+            <span className="font-medium text-foreground">Annual option:</span> Save 17% — pay yearly, get 2 months free. Starter $32/mo · Growth $41/mo · Agency $124/mo
+          </p>
+          <p>🔒 30-day money-back guarantee on all plans · No annual contracts · Cancel any time from your dashboard</p>
+        </div>
 
         {/* Competitor comparison */}
-        <div className="mt-8 max-w-2xl mx-auto">
+        <div className="mt-10 max-w-3xl mx-auto">
           <button
             type="button"
             onClick={() => setCompareOpen((v) => !v)}
             className="mx-auto flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground transition-colors"
           >
-            How does ReviewReply compare?
-            <ChevronDown
-              size={14}
-              className={cn("transition-transform", compareOpen && "rotate-180")}
-            />
+            How does ReviewReply compare to other tools?
+            <ChevronDown size={14} className={cn("transition-transform", compareOpen && "rotate-180")} />
           </button>
           {compareOpen && (
             <div className="mt-5 border border-border rounded-lg overflow-hidden bg-surface animate-in-fade">
               <table className="w-full text-[13px]">
                 <thead>
                   <tr className="bg-muted-bg text-muted-foreground">
-                    <th className="text-left px-4 py-2.5 font-medium">Tool</th>
-                    <th className="text-left px-4 py-2.5 font-medium">Price</th>
-                    <th className="text-left px-4 py-2.5 font-medium">Auto-reply</th>
-                    <th className="text-left px-4 py-2.5 font-medium">Multi-location</th>
+                    <th className="text-left px-4 py-2.5 font-medium"></th>
+                    <th className="text-left px-4 py-2.5 font-medium" style={{ backgroundColor: "#FEF2EC", color: "hsl(var(--accent))" }}>
+                      ReviewReply
+                    </th>
+                    <th className="text-left px-4 py-2.5 font-medium">Birdeye</th>
+                    <th className="text-left px-4 py-2.5 font-medium">Podium</th>
+                    <th className="text-left px-4 py-2.5 font-medium">NiceJob</th>
                   </tr>
                 </thead>
                 <tbody>
                   {[
-                    { tool: "Birdeye", price: "$299/mo", auto: "✓", multi: "✓", us: false },
-                    { tool: "Podium", price: "$399/mo", auto: "✓", multi: "✓", us: false },
-                    { tool: "Grade.us", price: "$110/mo", auto: "✗", multi: "✓", us: false },
-                    { tool: "ReviewReply", price: "$69/mo", auto: "✓", multi: "✓", us: true },
-                  ].map((row) => (
-                    <tr
-                      key={row.tool}
-                      className="border-t border-border"
-                      style={row.us ? { backgroundColor: "#FEF2EC" } : undefined}
-                    >
-                      <td className={cn("px-4 py-2.5", row.us && "font-semibold text-foreground")}>
-                        {row.tool}
-                      </td>
-                      <td className="px-4 py-2.5 text-foreground/80">{row.price}</td>
-                      <td className="px-4 py-2.5 text-foreground/80">{row.auto}</td>
-                      <td className="px-4 py-2.5 text-foreground/80">{row.multi}</td>
+                    { row: "Starting price", us: "$39/mo", b: "$349+/mo", p: "$249+/mo", n: "$75/mo" },
+                    { row: "Auto-reply with timing delay", us: "✓", b: "✗", p: "✗", n: "✗" },
+                    { row: "Review generation", us: "✓", b: "✓", p: "✓", n: "✓" },
+                    { row: "Month-to-month billing", us: "✓", b: "✗ Annual only", p: "✗ Annual only", n: "✓" },
+                    { row: "No setup fee", us: "✓", b: "✗", p: "✗", n: "✓" },
+                    { row: "Setup time", us: "4 minutes", b: "Days + onboarding", p: "Days + onboarding", n: "~1 hour" },
+                  ].map((r) => (
+                    <tr key={r.row} className="border-t border-border">
+                      <td className="px-4 py-2.5 font-medium text-foreground/80">{r.row}</td>
+                      <td className="px-4 py-2.5 font-semibold text-foreground" style={{ backgroundColor: "#FEF2EC" }}>{r.us}</td>
+                      <td className="px-4 py-2.5 text-foreground/80">{r.b}</td>
+                      <td className="px-4 py-2.5 text-foreground/80">{r.p}</td>
+                      <td className="px-4 py-2.5 text-foreground/80">{r.n}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              <p className="px-4 py-3 text-[12px] text-muted-foreground italic border-t border-border">
+                Birdeye starts at $349/month and requires an annual contract. Podium starts at $249/month with the same lock-in. ReviewReply is month-to-month at any time and has no setup fee.
+              </p>
             </div>
           )}
         </div>
@@ -759,4 +973,3 @@ const PricingSection = ({
 };
 
 export default Index;
-
