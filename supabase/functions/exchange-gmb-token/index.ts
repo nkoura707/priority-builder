@@ -58,14 +58,15 @@ Deno.serve(async (req) => {
     if (!tokenRes.ok) {
       const errText = await tokenRes.text();
       console.error("Google token exchange failed:", errText);
-      return json({ error: "token_exchange_failed", detail: errText }, 400);
+      return json({ error: "token_exchange_failed" }, 400);
     }
 
     const tokens = await tokenRes.json();
     const { access_token, refresh_token, expires_in } = tokens;
 
     if (!access_token || !refresh_token) {
-      return json({ error: "missing_tokens", detail: tokens }, 400);
+      console.error("Missing tokens in Google response:", tokens);
+      return json({ error: "missing_tokens" }, 400);
     }
 
     // 2. Fetch GMB accounts
@@ -80,7 +81,6 @@ Deno.serve(async (req) => {
       return json(
         {
           error: "gmb_accounts_failed",
-          detail: errText,
           access_token,
           refresh_token,
           expires_in,
@@ -131,6 +131,6 @@ Deno.serve(async (req) => {
     });
   } catch (err) {
     console.error("exchange-gmb-token error:", err);
-    return json({ error: "internal_error", detail: String(err) }, 500);
+    return json({ error: "internal_error" }, 500);
   }
 });
