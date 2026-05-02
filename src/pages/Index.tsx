@@ -617,24 +617,28 @@ const Index = () => {
                   q: "I manage three locations. Before this, reviews just piled up. Now it's one less thing I have to worry about, and all three profiles look active and engaged.",
                   a: "Operator, Multi-location Café",
                 },
-              ].map((t) => (
-                <div key={t.a} className="bg-muted-bg border border-border rounded-xl p-6">
-                  <p className="text-[15px] text-foreground/80 leading-[1.7] italic">"{t.q}"</p>
-                  <div className="mt-4 text-[12px] text-muted-foreground">— {t.a}</div>
-                </div>
+              ].map((t, i) => (
+                <Reveal key={t.a} delay={i * 100}>
+                  <div className="h-full bg-muted-bg border border-border rounded-xl p-6 hover-lift hover:border-accent/40 transition-colors">
+                    <p className="text-[15px] text-foreground/80 leading-[1.7] italic">"{t.q}"</p>
+                    <div className="mt-4 text-[12px] text-muted-foreground">— {t.a}</div>
+                  </div>
+                </Reveal>
               ))}
             </div>
 
-            <div className="mt-14 flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12 text-center">
+            <div className="mt-14 flex flex-col sm:flex-row items-stretch justify-center gap-4 sm:gap-3 text-center">
               {[
                 { n: "12,000+", l: "reviews replied to" },
                 { n: "4.9 / 5", l: "from owners" },
                 { n: "12+", l: "business categories" },
-              ].map((s) => (
-                <div key={s.l}>
-                  <div className="font-serif text-[32px] leading-none text-foreground tracking-[-0.02em]">{s.n}</div>
-                  <div className="mt-2 text-[13px] text-muted-foreground">{s.l}</div>
-                </div>
+              ].map((s, i) => (
+                <Reveal key={s.l} delay={i * 100} className="flex-1">
+                  <div className="px-6 py-5 rounded-xl border border-border bg-surface hover:border-accent/40 hover-lift transition-colors h-full">
+                    <div className="font-serif text-[32px] leading-none text-accent tracking-[-0.02em]">{s.n}</div>
+                    <div className="mt-2 text-[13px] text-muted-foreground">{s.l}</div>
+                  </div>
+                </Reveal>
               ))}
             </div>
           </div>
