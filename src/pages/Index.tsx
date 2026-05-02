@@ -401,25 +401,21 @@ const Index = () => {
               {[
                 {
                   n: "01",
-                  t: "It piles up faster than you can answer",
                   body: "A new review comes in. You mean to reply. Something else needs your attention first. By the time you circle back, three more reviews have arrived, you don't know where to start, and the task feels bigger than it is. So it waits. And waits.",
                 },
                 {
                   n: "02",
-                  t: "Knowing what to actually say is hard",
                   body: "Even owners who do reply face a different problem: knowing what to say. A 5-star review is easy. A 3-star review with a vague complaint about \"the atmosphere\" is harder. A 1-star review from a customer who you know had an unreasonable experience — that one can take 20 minutes to write and still feel wrong.",
                 },
                 {
                   n: "03",
-                  t: "You don't need motivation — you need a system",
                   body: "What most businesses need isn't motivation. It's a system that handles this without them having to think about it.",
                 },
               ].map((p, i) => (
                 <Reveal key={p.n} delay={i * 90}>
                   <div className="h-full bg-muted-bg/60 border border-border rounded-xl p-6 hover-lift hover:border-accent/50 transition-colors">
                     <div className="font-serif text-[28px] leading-none text-accent/70 tracking-[-0.02em]">{p.n}</div>
-                    <h3 className="mt-4 text-[15px] font-semibold text-foreground leading-snug">{p.t}</h3>
-                    <p className="mt-3 text-[14px] text-muted-foreground leading-[1.7]">{p.body}</p>
+                    <p className="mt-4 text-[15px] text-foreground/80 leading-[1.7]">{p.body}</p>
                   </div>
                 </Reveal>
               ))}
