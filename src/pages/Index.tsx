@@ -100,7 +100,7 @@ const useScrollPosition = () => {
   return scrolled;
 };
 
-const useInView = <T extends HTMLElement>() => {
+const useInView = <T extends HTMLElement>(threshold = 0.15) => {
   const ref = useRef<T | null>(null);
   const [inView, setInView] = useState(false);
   useEffect(() => {
@@ -115,12 +115,40 @@ const useInView = <T extends HTMLElement>() => {
           }
         });
       },
-      { threshold: 0.2 },
+      { threshold },
     );
     obs.observe(el);
     return () => obs.disconnect();
-  }, []);
+  }, [threshold]);
   return { ref, inView };
+};
+
+/* Lightweight reveal-on-scroll wrapper. Pure CSS transition, no library. */
+const Reveal = ({
+  children,
+  delay = 0,
+  className = "",
+  as: Tag = "div",
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+  as?: keyof JSX.IntrinsicElements;
+}) => {
+  const { ref, inView } = useInView<HTMLDivElement>(0.12);
+  return (
+    <Tag
+      ref={ref as React.Ref<HTMLDivElement>}
+      className={cn(
+        "transition-all duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[opacity,transform] motion-reduce:transition-none",
+        inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4",
+        className,
+      )}
+      style={{ transitionDelay: inView ? `${delay}ms` : "0ms" }}
+    >
+      {children}
+    </Tag>
+  );
 };
 
 const HeroHeadline = () => {
