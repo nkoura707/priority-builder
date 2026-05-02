@@ -352,20 +352,38 @@ const Index = () => {
                   body: "More than half of customers who leave a negative review expect a response within seven days. Most businesses take weeks. Or never respond. The ones that reply fast build a reputation for actually caring — which shows up in their star rating over time.",
                   source: "BrightLocal, 2025",
                 },
-              ].map((card) => (
-                <div key={card.stat} className="bg-surface border border-border rounded-xl p-7 hover-lift">
-                  <div className="font-serif text-[24px] md:text-[26px] text-foreground tracking-[-0.02em] leading-[1.15]">
-                    {card.stat}
-                  </div>
-                  <p className="mt-4 text-[14px] text-muted-foreground leading-[1.7]">{card.body}</p>
-                  <p className="mt-4 text-[12px] italic text-foreground/50">Source: {card.source}</p>
-                </div>
-              ))}
+              ].map((card, i) => {
+                // Split the leading number/percentage from the rest of the headline for visual emphasis.
+                const match = card.stat.match(/^([^\s]+)\s+(.*)$/);
+                const lead = match ? match[1] : card.stat;
+                const rest = match ? match[2] : "";
+                return (
+                  <Reveal key={card.stat} delay={i * 90}>
+                    <div className="group bg-surface border border-border rounded-xl p-7 hover-lift hover:border-accent/60 transition-colors h-full">
+                      <div className="flex items-baseline gap-2 flex-wrap">
+                        <span className="font-serif text-[40px] md:text-[48px] leading-none text-accent tracking-[-0.03em]">
+                          {lead}
+                        </span>
+                        {rest && (
+                          <span className="font-serif text-[18px] md:text-[20px] text-foreground tracking-[-0.01em] leading-tight">
+                            {rest}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-5 h-px w-10 bg-accent/40 group-hover:w-16 transition-all duration-300" />
+                      <p className="mt-5 text-[14px] text-muted-foreground leading-[1.7]">{card.body}</p>
+                      <p className="mt-4 text-[12px] italic text-foreground/50">Source: {card.source}</p>
+                    </div>
+                  </Reveal>
+                );
+              })}
             </div>
 
-            <p className="mt-14 text-center text-[16px] italic text-foreground/70 max-w-[640px] mx-auto leading-[1.7]">
-              None of this requires better service, lower prices, or more advertising. It just requires showing up in the conversation your customers are already having about you.
-            </p>
+            <Reveal delay={120}>
+              <p className="mt-14 text-center text-[16px] italic text-foreground/70 max-w-[640px] mx-auto leading-[1.7]">
+                None of this requires better service, lower prices, or more advertising. It just requires showing up in the conversation your customers are already having about you.
+              </p>
+            </Reveal>
           </div>
         </section>
 
