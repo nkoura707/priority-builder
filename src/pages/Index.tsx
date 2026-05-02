@@ -425,34 +425,48 @@ const Index = () => {
         {/* Section 4 — Solution */}
         <section className="border-b border-border bg-muted-bg">
           <div className="max-w-3xl mx-auto px-6 py-24 md:py-32">
-            <div className="label-tiny text-accent mb-3">What ReviewReply does</div>
-            <h2 className="font-serif text-[32px] md:text-[44px] text-foreground tracking-[-0.02em] leading-[1.1]">
-              Every review gets a reply. You set it up once.
-            </h2>
-            <div className="mt-8 space-y-6 text-[16px] text-foreground/80 leading-[1.75]">
-              <p>
-                ReviewReply connects to your Google Business Profile and watches for new reviews as they come in. For each one, it reads the actual content of what the customer wrote — the specific complaint, the specific compliment, the specific detail — and writes a reply that addresses it directly.
-              </p>
-              <p>
-                Not a template. Not "Thank you for your review, we appreciate your feedback." A reply that reads like a person who actually read what the customer said and took it seriously.
-              </p>
-              <p>Then — and this is important — it waits.</p>
+            <Reveal>
+              <div className="label-tiny text-accent mb-3">What ReviewReply does</div>
+              <h2 className="font-serif text-[32px] md:text-[44px] text-foreground tracking-[-0.02em] leading-[1.1]">
+                Every review gets a reply. You set it up once.
+              </h2>
+            </Reveal>
+            <div className="mt-8 space-y-5 text-[16px] text-foreground/80 leading-[1.75]">
+              <Reveal delay={80}>
+                <p>
+                  ReviewReply connects to your Google Business Profile and watches for new reviews as they come in. For each one, it reads the actual content of what the customer wrote — <span className="font-semibold text-foreground">the specific complaint, the specific compliment, the specific detail</span> — and writes a reply that addresses it directly.
+                </p>
+              </Reveal>
+              <Reveal delay={140}>
+                <p>
+                  Not a template. Not "Thank you for your review, we appreciate your feedback." <span className="font-semibold text-foreground">A reply that reads like a person who actually read what the customer said and took it seriously.</span>
+                </p>
+              </Reveal>
+              <Reveal delay={200}>
+                <p className="font-serif italic text-[22px] md:text-[26px] text-foreground tracking-[-0.01em] leading-snug pt-2">
+                  Then — and this is important — <span className="text-accent">it waits.</span>
+                </p>
+              </Reveal>
             </div>
 
             {/* Callout box */}
-            <div
-              className="mt-10 rounded-xl p-6 md:p-7"
-              style={{ backgroundColor: "#FEF2EC", border: "1px solid #F5C4A0" }}
-            >
-              <div className="text-[14px] font-semibold text-foreground mb-2">Why the wait matters:</div>
-              <p className="text-[15px] text-foreground/80 leading-[1.7]">
-                Automated review tools that post instantly are increasingly recognized as bots. 46% of consumers say they can identify an AI-generated response by how fast it appears. ReviewReply holds every reply for 2–6 hours and posts during normal business hours — so every response looks like it came from a person who took a moment to think about it. We call this SmartDelay™. No competitor at our price point has it.
-              </p>
-            </div>
+            <Reveal delay={120}>
+              <div
+                className="mt-10 rounded-xl p-6 md:p-7 hover-lift transition-all"
+                style={{ backgroundColor: "#FEF2EC", border: "1px solid #F5C4A0" }}
+              >
+                <div className="text-[14px] font-semibold text-foreground mb-2">Why the wait matters:</div>
+                <p className="text-[15px] text-foreground/80 leading-[1.7]">
+                  Automated review tools that post instantly are increasingly recognized as bots. <span className="font-semibold text-foreground">46% of consumers say they can identify an AI-generated response by how fast it appears.</span> ReviewReply holds every reply for 2–6 hours and posts during normal business hours — so every response looks like it came from a person who took a moment to think about it. We call this <span className="font-semibold text-accent">SmartDelay™</span>. No competitor at our price point has it.
+                </p>
+              </div>
+            </Reveal>
 
-            <p className="mt-8 text-[16px] text-foreground/80 leading-[1.75]">
-              After the wait, the reply posts to Google automatically. If you want to review or edit the draft before it goes out, it's in your dashboard. You have the final say on everything.
-            </p>
+            <Reveal delay={80}>
+              <p className="mt-8 text-[16px] text-foreground/80 leading-[1.75]">
+                After the wait, the reply posts to Google automatically. If you want to review or edit the draft before it goes out, it's in your dashboard. <span className="font-semibold text-foreground">You have the final say on everything.</span>
+              </p>
+            </Reveal>
           </div>
         </section>
 
