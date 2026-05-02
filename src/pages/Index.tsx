@@ -502,16 +502,17 @@ const Index = () => {
                   style={howRef.inView ? { animationDelay: `${i * 120}ms` } : { opacity: 0 }}
                 >
                   {i < 2 && (
-                    <div className="hidden md:block absolute top-10 left-[120px] right-[-12px] border-t border-dashed border-border-strong" />
+                    <div className="hidden md:block absolute top-7 left-[64px] right-[-12px] border-t border-dashed border-border-strong" />
                   )}
-                  <div
-                    className="font-serif leading-none text-muted-bg-strong"
-                    style={{ fontSize: 80, letterSpacing: "-0.04em" }}
-                  >
-                    {s.n}
+                  <div className="relative bg-surface border border-border rounded-xl p-6 hover-lift hover:border-accent/50 transition-colors h-full">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-full bg-accent-light text-accent flex items-center justify-center font-serif text-[22px] tracking-[-0.02em] border border-accent/20 shrink-0">
+                        {s.n}
+                      </div>
+                      <h3 className="text-[16px] font-semibold text-foreground leading-snug">{s.t}</h3>
+                    </div>
+                    <p className="mt-5 text-[14px] text-muted-foreground leading-[1.7]">{s.d}</p>
                   </div>
-                  <h3 className="mt-5 text-[16px] font-semibold text-foreground">{s.t}</h3>
-                  <p className="mt-2 text-[14px] text-muted-foreground leading-[1.65] max-w-[320px]">{s.d}</p>
                 </div>
               ))}
             </div>
