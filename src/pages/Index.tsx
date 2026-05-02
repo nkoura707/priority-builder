@@ -389,20 +389,40 @@ const Index = () => {
 
         {/* Section 3 — The Problem in Plain Terms */}
         <section className="border-b border-border bg-surface">
-          <div className="max-w-3xl mx-auto px-6 py-24 md:py-32">
-            <h2 className="font-serif text-[32px] md:text-[40px] text-foreground tracking-[-0.02em] leading-[1.15]">
-              The problem isn't that owners don't care. It's that replying to reviews is genuinely hard to keep up with.
-            </h2>
-            <div className="mt-10 space-y-6 text-[16px] text-foreground/80 leading-[1.75]">
-              <p>
-                A new review comes in. You mean to reply. Something else needs your attention first. By the time you circle back, three more reviews have arrived, you don't know where to start, and the task feels bigger than it is. So it waits. And waits.
-              </p>
-              <p>
-                Even owners who do reply face a different problem: knowing what to say. A 5-star review is easy. A 3-star review with a vague complaint about "the atmosphere" is harder. A 1-star review from a customer who you know had an unreasonable experience — that one can take 20 minutes to write and still feel wrong.
-              </p>
-              <p>
-                What most businesses need isn't motivation. It's a system that handles this without them having to think about it.
-              </p>
+          <div className="max-w-5xl mx-auto px-6 py-24 md:py-32">
+            <Reveal>
+              <div className="label-tiny text-accent mb-3">The honest problem</div>
+              <h2 className="font-serif text-[32px] md:text-[40px] text-foreground tracking-[-0.02em] leading-[1.15] max-w-[760px]">
+                The problem isn't that owners don't care. It's that <span className="text-accent">replying to reviews is genuinely hard to keep up with</span>.
+              </h2>
+            </Reveal>
+
+            <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-5">
+              {[
+                {
+                  n: "01",
+                  t: "It piles up faster than you can answer",
+                  body: "A new review comes in. You mean to reply. Something else needs your attention first. By the time you circle back, three more reviews have arrived, you don't know where to start, and the task feels bigger than it is. So it waits. And waits.",
+                },
+                {
+                  n: "02",
+                  t: "Knowing what to actually say is hard",
+                  body: "Even owners who do reply face a different problem: knowing what to say. A 5-star review is easy. A 3-star review with a vague complaint about \"the atmosphere\" is harder. A 1-star review from a customer who you know had an unreasonable experience — that one can take 20 minutes to write and still feel wrong.",
+                },
+                {
+                  n: "03",
+                  t: "You don't need motivation — you need a system",
+                  body: "What most businesses need isn't motivation. It's a system that handles this without them having to think about it.",
+                },
+              ].map((p, i) => (
+                <Reveal key={p.n} delay={i * 90}>
+                  <div className="h-full bg-muted-bg/60 border border-border rounded-xl p-6 hover-lift hover:border-accent/50 transition-colors">
+                    <div className="font-serif text-[28px] leading-none text-accent/70 tracking-[-0.02em]">{p.n}</div>
+                    <h3 className="mt-4 text-[15px] font-semibold text-foreground leading-snug">{p.t}</h3>
+                    <p className="mt-3 text-[14px] text-muted-foreground leading-[1.7]">{p.body}</p>
+                  </div>
+                </Reveal>
+              ))}
             </div>
           </div>
         </section>
