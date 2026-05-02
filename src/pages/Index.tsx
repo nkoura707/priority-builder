@@ -391,7 +391,6 @@ const Index = () => {
         <section className="border-b border-border bg-surface">
           <div className="max-w-5xl mx-auto px-6 py-24 md:py-32">
             <Reveal>
-              <div className="label-tiny text-accent mb-3">The honest problem</div>
               <h2 className="font-serif text-[32px] md:text-[40px] text-foreground tracking-[-0.02em] leading-[1.15] max-w-[760px]">
                 The problem isn't that owners don't care. It's that <span className="text-accent">replying to reviews is genuinely hard to keep up with</span>.
               </h2>
