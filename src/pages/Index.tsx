@@ -297,19 +297,27 @@ const Index = () => {
         {/* Section 1 — The Revelation */}
         <section className="border-b border-border bg-surface">
           <div className="max-w-3xl mx-auto px-6 py-24 md:py-32">
-            <p className="font-serif text-[28px] md:text-[36px] text-foreground tracking-[-0.02em] leading-[1.2] text-center italic">
-              "What happens when a customer leaves you a review and you don't reply?"
-            </p>
-            <div className="mt-12 space-y-6 text-[17px] text-foreground/80 leading-[1.75]">
-              <p>
-                Most business owners assume the answer is: nothing. The review sits there, people read it, life goes on.
+            <Reveal>
+              <p className="font-serif text-[28px] md:text-[36px] text-foreground tracking-[-0.02em] leading-[1.2] text-center italic">
+                "What happens when a customer leaves you a review and you don't reply?"
               </p>
-              <p>
-                But here's what actually happens. When a potential customer finds your business on Google, they don't just read the reviews — they scroll down to see how you responded to them. A business with 4.6 stars and thoughtful replies to every review looks fundamentally different from a business with the same 4.6 stars and silence. One looks like a business that cares about its customers. The other looks like no one's home.
-              </p>
-              <p>
-                That gap — between replying and not replying — is costing real businesses real revenue. Quietly. Every week.
-              </p>
+            </Reveal>
+            <div className="mt-12 space-y-5 text-[17px] text-foreground/80 leading-[1.75]">
+              <Reveal delay={80}>
+                <p className="border-l-2 border-border pl-5">
+                  Most business owners assume the answer is: <span className="font-semibold text-foreground">nothing</span>. The review sits there, people read it, life goes on.
+                </p>
+              </Reveal>
+              <Reveal delay={140}>
+                <p className="border-l-2 border-accent/60 pl-5 bg-accent-light/40 py-4 rounded-r-md">
+                  But here's what actually happens. When a potential customer finds your business on Google, they don't just read the reviews — <span className="font-semibold text-foreground">they scroll down to see how you responded to them</span>. A business with 4.6 stars and thoughtful replies to every review looks fundamentally different from a business with the same 4.6 stars and silence. One looks like a business that cares about its customers. The other looks like no one's home.
+                </p>
+              </Reveal>
+              <Reveal delay={200}>
+                <p className="border-l-2 border-border pl-5">
+                  That gap — between replying and not replying — is <span className="font-semibold text-foreground">costing real businesses real revenue</span>. Quietly. Every week.
+                </p>
+              </Reveal>
             </div>
           </div>
         </section>
