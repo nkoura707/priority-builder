@@ -100,7 +100,7 @@ const useScrollPosition = () => {
   return scrolled;
 };
 
-const useInView = <T extends HTMLElement>() => {
+const useInView = <T extends HTMLElement>(threshold = 0.15) => {
   const ref = useRef<T | null>(null);
   const [inView, setInView] = useState(false);
   useEffect(() => {
@@ -115,12 +115,38 @@ const useInView = <T extends HTMLElement>() => {
           }
         });
       },
-      { threshold: 0.2 },
+      { threshold },
     );
     obs.observe(el);
     return () => obs.disconnect();
-  }, []);
+  }, [threshold]);
   return { ref, inView };
+};
+
+/* Lightweight reveal-on-scroll wrapper. Pure CSS transition, no library. */
+const Reveal = ({
+  children,
+  delay = 0,
+  className = "",
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+}) => {
+  const { ref, inView } = useInView<HTMLDivElement>(0.12);
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        "transition-all duration-[700ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[opacity,transform] motion-reduce:transition-none",
+        inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4",
+        className,
+      )}
+      style={{ transitionDelay: inView ? `${delay}ms` : "0ms" }}
+    >
+      {children}
+    </div>
+  );
 };
 
 const HeroHeadline = () => {
@@ -271,19 +297,27 @@ const Index = () => {
         {/* Section 1 — The Revelation */}
         <section className="border-b border-border bg-surface">
           <div className="max-w-3xl mx-auto px-6 py-24 md:py-32">
-            <p className="font-serif text-[28px] md:text-[36px] text-foreground tracking-[-0.02em] leading-[1.2] text-center italic">
-              "What happens when a customer leaves you a review and you don't reply?"
-            </p>
-            <div className="mt-12 space-y-6 text-[17px] text-foreground/80 leading-[1.75]">
-              <p>
-                Most business owners assume the answer is: nothing. The review sits there, people read it, life goes on.
+            <Reveal>
+              <p className="font-serif text-[28px] md:text-[36px] text-foreground tracking-[-0.02em] leading-[1.2] text-center italic">
+                "What happens when a customer leaves you a review and you don't reply?"
               </p>
-              <p>
-                But here's what actually happens. When a potential customer finds your business on Google, they don't just read the reviews — they scroll down to see how you responded to them. A business with 4.6 stars and thoughtful replies to every review looks fundamentally different from a business with the same 4.6 stars and silence. One looks like a business that cares about its customers. The other looks like no one's home.
-              </p>
-              <p>
-                That gap — between replying and not replying — is costing real businesses real revenue. Quietly. Every week.
-              </p>
+            </Reveal>
+            <div className="mt-12 space-y-5 text-[17px] text-foreground/80 leading-[1.75]">
+              <Reveal delay={80}>
+                <p className="border-l-2 border-border pl-5">
+                  Most business owners assume the answer is: <span className="font-semibold text-foreground">nothing</span>. The review sits there, people read it, life goes on.
+                </p>
+              </Reveal>
+              <Reveal delay={140}>
+                <p className="border-l-2 border-accent/60 pl-5 bg-accent-light/40 py-4 rounded-r-md">
+                  But here's what actually happens. When a potential customer finds your business on Google, they don't just read the reviews — <span className="font-semibold text-foreground">they scroll down to see how you responded to them</span>. A business with 4.6 stars and thoughtful replies to every review looks fundamentally different from a business with the same 4.6 stars and silence. One looks like a business that cares about its customers. The other looks like no one's home.
+                </p>
+              </Reveal>
+              <Reveal delay={200}>
+                <p className="border-l-2 border-border pl-5">
+                  That gap — between replying and not replying — is <span className="font-semibold text-foreground">costing real businesses real revenue</span>. Quietly. Every week.
+                </p>
+              </Reveal>
             </div>
           </div>
         </section>
@@ -318,39 +352,72 @@ const Index = () => {
                   body: "More than half of customers who leave a negative review expect a response within seven days. Most businesses take weeks. Or never respond. The ones that reply fast build a reputation for actually caring — which shows up in their star rating over time.",
                   source: "BrightLocal, 2025",
                 },
-              ].map((card) => (
-                <div key={card.stat} className="bg-surface border border-border rounded-xl p-7 hover-lift">
-                  <div className="font-serif text-[24px] md:text-[26px] text-foreground tracking-[-0.02em] leading-[1.15]">
-                    {card.stat}
-                  </div>
-                  <p className="mt-4 text-[14px] text-muted-foreground leading-[1.7]">{card.body}</p>
-                  <p className="mt-4 text-[12px] italic text-foreground/50">Source: {card.source}</p>
-                </div>
-              ))}
+              ].map((card, i) => {
+                // Split the leading number/percentage from the rest of the headline for visual emphasis.
+                const match = card.stat.match(/^([^\s]+)\s+(.*)$/);
+                const lead = match ? match[1] : card.stat;
+                const rest = match ? match[2] : "";
+                return (
+                  <Reveal key={card.stat} delay={i * 90}>
+                    <div className="group bg-surface border border-border rounded-xl p-7 hover-lift hover:border-accent/60 transition-colors h-full">
+                      <div className="flex items-baseline gap-2 flex-wrap">
+                        <span className="font-serif text-[40px] md:text-[48px] leading-none text-accent tracking-[-0.03em]">
+                          {lead}
+                        </span>
+                        {rest && (
+                          <span className="font-serif text-[18px] md:text-[20px] text-foreground tracking-[-0.01em] leading-tight">
+                            {rest}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-5 h-px w-10 bg-accent/40 group-hover:w-16 transition-all duration-300" />
+                      <p className="mt-5 text-[14px] text-muted-foreground leading-[1.7]">{card.body}</p>
+                      <p className="mt-4 text-[12px] italic text-foreground/50">Source: {card.source}</p>
+                    </div>
+                  </Reveal>
+                );
+              })}
             </div>
 
-            <p className="mt-14 text-center text-[16px] italic text-foreground/70 max-w-[640px] mx-auto leading-[1.7]">
-              None of this requires better service, lower prices, or more advertising. It just requires showing up in the conversation your customers are already having about you.
-            </p>
+            <Reveal delay={120}>
+              <p className="mt-14 text-center text-[16px] italic text-foreground/70 max-w-[640px] mx-auto leading-[1.7]">
+                None of this requires better service, lower prices, or more advertising. It just requires showing up in the conversation your customers are already having about you.
+              </p>
+            </Reveal>
           </div>
         </section>
 
         {/* Section 3 — The Problem in Plain Terms */}
         <section className="border-b border-border bg-surface">
-          <div className="max-w-3xl mx-auto px-6 py-24 md:py-32">
-            <h2 className="font-serif text-[32px] md:text-[40px] text-foreground tracking-[-0.02em] leading-[1.15]">
-              The problem isn't that owners don't care. It's that replying to reviews is genuinely hard to keep up with.
-            </h2>
-            <div className="mt-10 space-y-6 text-[16px] text-foreground/80 leading-[1.75]">
-              <p>
-                A new review comes in. You mean to reply. Something else needs your attention first. By the time you circle back, three more reviews have arrived, you don't know where to start, and the task feels bigger than it is. So it waits. And waits.
-              </p>
-              <p>
-                Even owners who do reply face a different problem: knowing what to say. A 5-star review is easy. A 3-star review with a vague complaint about "the atmosphere" is harder. A 1-star review from a customer who you know had an unreasonable experience — that one can take 20 minutes to write and still feel wrong.
-              </p>
-              <p>
-                What most businesses need isn't motivation. It's a system that handles this without them having to think about it.
-              </p>
+          <div className="max-w-5xl mx-auto px-6 py-24 md:py-32">
+            <Reveal>
+              <h2 className="font-serif text-[32px] md:text-[40px] text-foreground tracking-[-0.02em] leading-[1.15] max-w-[760px]">
+                The problem isn't that owners don't care. It's that <span className="text-accent">replying to reviews is genuinely hard to keep up with</span>.
+              </h2>
+            </Reveal>
+
+            <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-5">
+              {[
+                {
+                  n: "01",
+                  body: "A new review comes in. You mean to reply. Something else needs your attention first. By the time you circle back, three more reviews have arrived, you don't know where to start, and the task feels bigger than it is. So it waits. And waits.",
+                },
+                {
+                  n: "02",
+                  body: "Even owners who do reply face a different problem: knowing what to say. A 5-star review is easy. A 3-star review with a vague complaint about \"the atmosphere\" is harder. A 1-star review from a customer who you know had an unreasonable experience — that one can take 20 minutes to write and still feel wrong.",
+                },
+                {
+                  n: "03",
+                  body: "What most businesses need isn't motivation. It's a system that handles this without them having to think about it.",
+                },
+              ].map((p, i) => (
+                <Reveal key={p.n} delay={i * 90}>
+                  <div className="h-full bg-muted-bg/60 border border-border rounded-xl p-6 hover-lift hover:border-accent/50 transition-colors">
+                    <div className="font-serif text-[28px] leading-none text-accent/70 tracking-[-0.02em]">{p.n}</div>
+                    <p className="mt-4 text-[15px] text-foreground/80 leading-[1.7]">{p.body}</p>
+                  </div>
+                </Reveal>
+              ))}
             </div>
           </div>
         </section>
@@ -358,34 +425,48 @@ const Index = () => {
         {/* Section 4 — Solution */}
         <section className="border-b border-border bg-muted-bg">
           <div className="max-w-3xl mx-auto px-6 py-24 md:py-32">
-            <div className="label-tiny text-accent mb-3">What ReviewReply does</div>
-            <h2 className="font-serif text-[32px] md:text-[44px] text-foreground tracking-[-0.02em] leading-[1.1]">
-              Every review gets a reply. You set it up once.
-            </h2>
-            <div className="mt-8 space-y-6 text-[16px] text-foreground/80 leading-[1.75]">
-              <p>
-                ReviewReply connects to your Google Business Profile and watches for new reviews as they come in. For each one, it reads the actual content of what the customer wrote — the specific complaint, the specific compliment, the specific detail — and writes a reply that addresses it directly.
-              </p>
-              <p>
-                Not a template. Not "Thank you for your review, we appreciate your feedback." A reply that reads like a person who actually read what the customer said and took it seriously.
-              </p>
-              <p>Then — and this is important — it waits.</p>
+            <Reveal>
+              <div className="label-tiny text-accent mb-3">What ReviewReply does</div>
+              <h2 className="font-serif text-[32px] md:text-[44px] text-foreground tracking-[-0.02em] leading-[1.1]">
+                Every review gets a reply. You set it up once.
+              </h2>
+            </Reveal>
+            <div className="mt-8 space-y-5 text-[16px] text-foreground/80 leading-[1.75]">
+              <Reveal delay={80}>
+                <p>
+                  ReviewReply connects to your Google Business Profile and watches for new reviews as they come in. For each one, it reads the actual content of what the customer wrote — <span className="font-semibold text-foreground">the specific complaint, the specific compliment, the specific detail</span> — and writes a reply that addresses it directly.
+                </p>
+              </Reveal>
+              <Reveal delay={140}>
+                <p>
+                  Not a template. Not "Thank you for your review, we appreciate your feedback." <span className="font-semibold text-foreground">A reply that reads like a person who actually read what the customer said and took it seriously.</span>
+                </p>
+              </Reveal>
+              <Reveal delay={200}>
+                <p className="font-serif italic text-[22px] md:text-[26px] text-foreground tracking-[-0.01em] leading-snug pt-2">
+                  Then — and this is important — <span className="text-accent">it waits.</span>
+                </p>
+              </Reveal>
             </div>
 
             {/* Callout box */}
-            <div
-              className="mt-10 rounded-xl p-6 md:p-7"
-              style={{ backgroundColor: "#FEF2EC", border: "1px solid #F5C4A0" }}
-            >
-              <div className="text-[14px] font-semibold text-foreground mb-2">Why the wait matters:</div>
-              <p className="text-[15px] text-foreground/80 leading-[1.7]">
-                Automated review tools that post instantly are increasingly recognized as bots. 46% of consumers say they can identify an AI-generated response by how fast it appears. ReviewReply holds every reply for 2–6 hours and posts during normal business hours — so every response looks like it came from a person who took a moment to think about it. We call this SmartDelay™. No competitor at our price point has it.
-              </p>
-            </div>
+            <Reveal delay={120}>
+              <div
+                className="mt-10 rounded-xl p-6 md:p-7 hover-lift transition-all"
+                style={{ backgroundColor: "#FEF2EC", border: "1px solid #F5C4A0" }}
+              >
+                <div className="text-[14px] font-semibold text-foreground mb-2">Why the wait matters:</div>
+                <p className="text-[15px] text-foreground/80 leading-[1.7]">
+                  Automated review tools that post instantly are increasingly recognized as bots. <span className="font-semibold text-foreground">46% of consumers say they can identify an AI-generated response by how fast it appears.</span> ReviewReply holds every reply for 2–6 hours and posts during normal business hours — so every response looks like it came from a person who took a moment to think about it. We call this <span className="font-semibold text-accent">SmartDelay™</span>. No competitor at our price point has it.
+                </p>
+              </div>
+            </Reveal>
 
-            <p className="mt-8 text-[16px] text-foreground/80 leading-[1.75]">
-              After the wait, the reply posts to Google automatically. If you want to review or edit the draft before it goes out, it's in your dashboard. You have the final say on everything.
-            </p>
+            <Reveal delay={80}>
+              <p className="mt-8 text-[16px] text-foreground/80 leading-[1.75]">
+                After the wait, the reply posts to Google automatically. If you want to review or edit the draft before it goes out, it's in your dashboard. <span className="font-semibold text-foreground">You have the final say on everything.</span>
+              </p>
+            </Reveal>
           </div>
         </section>
 
@@ -421,16 +502,17 @@ const Index = () => {
                   style={howRef.inView ? { animationDelay: `${i * 120}ms` } : { opacity: 0 }}
                 >
                   {i < 2 && (
-                    <div className="hidden md:block absolute top-10 left-[120px] right-[-12px] border-t border-dashed border-border-strong" />
+                    <div className="hidden md:block absolute top-7 left-[64px] right-[-12px] border-t border-dashed border-border-strong" />
                   )}
-                  <div
-                    className="font-serif leading-none text-muted-bg-strong"
-                    style={{ fontSize: 80, letterSpacing: "-0.04em" }}
-                  >
-                    {s.n}
+                  <div className="relative bg-surface border border-border rounded-xl p-6 hover-lift hover:border-accent/50 transition-colors h-full">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-full bg-accent-light text-accent flex items-center justify-center font-serif text-[22px] tracking-[-0.02em] border border-accent/20 shrink-0">
+                        {s.n}
+                      </div>
+                      <h3 className="text-[16px] font-semibold text-foreground leading-snug">{s.t}</h3>
+                    </div>
+                    <p className="mt-5 text-[14px] text-muted-foreground leading-[1.7]">{s.d}</p>
                   </div>
-                  <h3 className="mt-5 text-[16px] font-semibold text-foreground">{s.t}</h3>
-                  <p className="mt-2 text-[14px] text-muted-foreground leading-[1.65] max-w-[320px]">{s.d}</p>
                 </div>
               ))}
             </div>
@@ -499,11 +581,17 @@ const Index = () => {
                   label: "Always in control",
                   body: "Every reply is a draft first. Edit it, rewrite it, or skip it entirely before SmartDelay posts it. Most owners stop checking after the first few weeks because the quality holds up — but the control is always there.",
                 },
-              ].map((cell) => (
-                <div key={cell.label} className="bg-surface border border-border rounded-xl p-7 hover-lift">
-                  <div className="label-tiny text-accent mb-3">{cell.label}</div>
-                  <p className="text-[15px] text-foreground/80 leading-[1.7]">{cell.body}</p>
-                </div>
+              ].map((cell, i) => (
+                <Reveal key={cell.label} delay={i * 80}>
+                  <div className="group h-full bg-surface border border-border rounded-xl p-7 hover-lift hover:border-accent/60 transition-colors relative overflow-hidden">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent scale-y-0 origin-top group-hover:scale-y-100 transition-transform duration-300" />
+                    <div className="flex items-center gap-2 mb-3">
+                      <Check size={14} className="text-accent" />
+                      <div className="label-tiny text-accent">{cell.label}</div>
+                    </div>
+                    <p className="text-[15px] text-foreground/80 leading-[1.7]">{cell.body}</p>
+                  </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -529,24 +617,28 @@ const Index = () => {
                   q: "I manage three locations. Before this, reviews just piled up. Now it's one less thing I have to worry about, and all three profiles look active and engaged.",
                   a: "Operator, Multi-location Café",
                 },
-              ].map((t) => (
-                <div key={t.a} className="bg-muted-bg border border-border rounded-xl p-6">
-                  <p className="text-[15px] text-foreground/80 leading-[1.7] italic">"{t.q}"</p>
-                  <div className="mt-4 text-[12px] text-muted-foreground">— {t.a}</div>
-                </div>
+              ].map((t, i) => (
+                <Reveal key={t.a} delay={i * 100}>
+                  <div className="h-full bg-muted-bg border border-border rounded-xl p-6 hover-lift hover:border-accent/40 transition-colors">
+                    <p className="text-[15px] text-foreground/80 leading-[1.7] italic">"{t.q}"</p>
+                    <div className="mt-4 text-[12px] text-muted-foreground">— {t.a}</div>
+                  </div>
+                </Reveal>
               ))}
             </div>
 
-            <div className="mt-14 flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12 text-center">
+            <div className="mt-14 flex flex-col sm:flex-row items-stretch justify-center gap-4 sm:gap-3 text-center">
               {[
                 { n: "12,000+", l: "reviews replied to" },
                 { n: "4.9 / 5", l: "from owners" },
                 { n: "12+", l: "business categories" },
-              ].map((s) => (
-                <div key={s.l}>
-                  <div className="font-serif text-[32px] leading-none text-foreground tracking-[-0.02em]">{s.n}</div>
-                  <div className="mt-2 text-[13px] text-muted-foreground">{s.l}</div>
-                </div>
+              ].map((s, i) => (
+                <Reveal key={s.l} delay={i * 100} className="flex-1">
+                  <div className="px-6 py-5 rounded-xl border border-border bg-surface hover:border-accent/40 hover-lift transition-colors h-full">
+                    <div className="font-serif text-[32px] leading-none text-accent tracking-[-0.02em]">{s.n}</div>
+                    <div className="mt-2 text-[13px] text-muted-foreground">{s.l}</div>
+                  </div>
+                </Reveal>
               ))}
             </div>
           </div>
