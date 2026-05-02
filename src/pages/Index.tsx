@@ -581,11 +581,17 @@ const Index = () => {
                   label: "Always in control",
                   body: "Every reply is a draft first. Edit it, rewrite it, or skip it entirely before SmartDelay posts it. Most owners stop checking after the first few weeks because the quality holds up — but the control is always there.",
                 },
-              ].map((cell) => (
-                <div key={cell.label} className="bg-surface border border-border rounded-xl p-7 hover-lift">
-                  <div className="label-tiny text-accent mb-3">{cell.label}</div>
-                  <p className="text-[15px] text-foreground/80 leading-[1.7]">{cell.body}</p>
-                </div>
+              ].map((cell, i) => (
+                <Reveal key={cell.label} delay={i * 80}>
+                  <div className="group h-full bg-surface border border-border rounded-xl p-7 hover-lift hover:border-accent/60 transition-colors relative overflow-hidden">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent scale-y-0 origin-top group-hover:scale-y-100 transition-transform duration-300" />
+                    <div className="flex items-center gap-2 mb-3">
+                      <Check size={14} className="text-accent" />
+                      <div className="label-tiny text-accent">{cell.label}</div>
+                    </div>
+                    <p className="text-[15px] text-foreground/80 leading-[1.7]">{cell.body}</p>
+                  </div>
+                </Reveal>
               ))}
             </div>
           </div>
